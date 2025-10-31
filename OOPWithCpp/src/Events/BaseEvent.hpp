@@ -24,7 +24,7 @@ namespace OWC
 
 		inline EventType GetEventType() const { return m_EventType; }
 		inline std::wstring_view GetName() const { return m_Name; }
-		inline std::wstring ToString() const { return m_Name; }
+		inline std::wstring_view ToString() const { return m_Name; }
 
 	protected:
 		explicit BaseEvent(EventType type, std::wstring_view name)
@@ -47,7 +47,8 @@ namespace OWC
 		}
 
 		template <typename EventType>
-		inline bool Dispatch(const std::function<bool(const EventType&)>& func) requires std::is_base_of_v<BaseEvent, EventType>
+		requires (std::is_base_of_v<BaseEvent, EventType> && !std::is_same_v<BaseEvent, EventType>) // EventType must be a derived class of BaseEvent and not BaseEvent itself
+		inline bool Dispatch(const std::function<bool(const EventType&)>& func)
 		{
 			if (!m_Event.m_HasBeenHandled && m_Event.GetEventType() == EventType::GetStaticType())
 			{

@@ -4,7 +4,7 @@
 
 namespace OWC
 {
-	class WindowCloseEvent : public BaseEvent
+	class WindowCloseEvent final : public BaseEvent
 	{
 	public:
 		inline WindowCloseEvent() : BaseEvent(EventType::WindowClose, L"WindowClose") {}

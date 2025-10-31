@@ -1,6 +1,7 @@
 #include "Application.hpp"
 #include "BaseEvent.hpp"
 #include "WindowCloseEvent.hpp"
+#include "WindowResize.hpp"
 
 #include <iostream>
 
@@ -34,7 +35,11 @@ namespace OWC
 		dispacher.Dispatch<WindowCloseEvent>([this](const WindowCloseEvent&) {
 			this->OnWindowClose();
 			return true;
-		});
+			});
+
+		dispacher.Dispatch<WindowResize>([this](const WindowResize& e) {
+			return this->m_Window->Resize(e.GetWidth(), e.GetHeight());
+			});
 	}
 
 	void Application::OnWindowClose()

@@ -14,7 +14,7 @@ namespace OWC
 		WindowEvent() = default;
 		~WindowEvent() = default;
 
-		void EventCall(SDL_Event* event);
+		void EventCall(SDL_Event& event) const;
 
 		inline void SetCallback(const std::function<void(BaseEvent&)>& callback) { m_Callback = callback; }
 

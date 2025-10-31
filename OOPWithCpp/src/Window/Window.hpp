@@ -26,8 +26,10 @@ namespace OWC
 
 		inline void SetEventCallback(const std::function<void(BaseEvent&)>& callback) { m_WindowEvent.SetCallback(callback); }
 
+		bool Resize(int width, int height);
+
 	private:
-		void pollEvents();
+		void PollEvents() const;
 
 	private:
 		WindowEvent m_WindowEvent;

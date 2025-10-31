@@ -19,17 +19,28 @@ namespace OWC
 
 	void Window::Update()
 	{
-		pollEvents();
+		PollEvents();
 		// TODO: add the rest of the update logic (e.g., rendering, state updates)
 	}
 
-	void Window::pollEvents()
+	bool Window::Resize(int width, int height)
+	{
+		if (m_Window)
+		{
+			SDL_SetWindowSize(m_Window.get(), width, height);
+			m_Properties.Width = width;
+			m_Properties.Height = height;
+			return true;
+		}
+		return false;
+	}
+
+	void Window::PollEvents() const
 	{
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
-			m_WindowEvent.EventCall(&event);
+			m_WindowEvent.EventCall(event);
 		}
 	}
-
 } // namespace OWC
