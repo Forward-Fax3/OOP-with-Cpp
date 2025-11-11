@@ -103,6 +103,7 @@ workspace "OOPWithCpp"
 	language "C++"
 	cppdialect "C++latest"
 	cdialect "c17"
+	characterset "Unicode"
 
 	flags
 	{
@@ -114,6 +115,8 @@ workspace "OOPWithCpp"
 		"GLM_ENABLE_EXPERIMENTAL",
 		"GLM_FORCE_DEFAULT_ALIGNED_GENTYPES",
 		"GLM_FORCE_INLINE",
+		"_UNICODE",
+		"UNICODE"
 	}
 
 	include "OOPWithCpp/3rdParty/Projects/git"
@@ -318,6 +321,13 @@ project "OOPWithCppAVX512"
 		"AVX2",
 		"AVX512"
 	}
+
+	filter { "platforms:clang" }
+		buildoptions
+		{
+			"-mavx512vbmi",
+			"-mavx512vbmi2"
+		}
 
 	filter { "system:windows" }
 		systemversion "latest"

@@ -294,6 +294,13 @@ project "SDL3_AVX512"
 		"__AVX512F__"
 	}
 
+	filter { "platforms:clang" }
+		buildoptions
+		{
+			"-mavx512vbmi",
+			"-mavx512vbmi2"
+		}
+
 	filter { "system:windows" }
 		systemversion "latest"
 
@@ -394,6 +401,13 @@ project "ImGui_AVX512"
         "ImGui",
 		"SDL/include"
 	}
+
+	filter { "platforms:clang" }
+		buildoptions
+		{
+			"-mavx512vbmi",
+			"-mavx512vbmi2"
+		}
 
 	filter { "system:windows" }
 		systemversion "latest"
