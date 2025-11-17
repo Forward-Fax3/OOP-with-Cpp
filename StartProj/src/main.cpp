@@ -98,9 +98,9 @@ int main(int argc, char** argv)
 		return 2;
 	}
 
-	auto WulledEntry = std::bit_cast<Start>(GetProcAddress(dll, "EntryPoint"));
+	auto EntryPoint = std::bit_cast<Start>(GetProcAddress(dll, "EntryPoint"));
 
-	if (WulledEntry == nullptr)
+	if (EntryPoint == nullptr)
 	{
 		std::array<char8_t, 1024> error{};
 		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, GetLastError(), MAKELANGID(LANG_NEUTRAL, SUBLANG_SYS_DEFAULT), ToCharPtr(error), 1024, nullptr);
@@ -108,5 +108,5 @@ int main(int argc, char** argv)
 		return 3;
 	}
 
-	WulledEntry(argc, argv);
+	EntryPoint(argc, argv);
 }
