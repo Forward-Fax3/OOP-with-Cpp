@@ -3,7 +3,8 @@ newoption
 	trigger = "cleanType",
 	allowed =
 	{
-		"vs2022"
+		"vs2022",
+		"vs2026"
 	},
 	description = "select what type of clean you want to do."
 }
@@ -37,8 +38,9 @@ workspace "OOPWithCpp"
 
 	if _ACTION == "clean" then
 		os.rmdir("bin");
-		filter { "options:cleanType=vs2022" }
+		filter { "options:cleanType=vs2022 or vs2026" }
 			os.remove("OOPWithCpp.sln")
+			os.remove("OOPWithCpp.slnx")
 			os.remove("StartProj/StartProj.vcxproj")
 			os.remove("StartProj/StartProj.vcxproj.user")
 			os.remove("StartProj/StartProj.vcxproj.filters")
@@ -96,6 +98,12 @@ workspace "OOPWithCpp"
 		symbols "Off"
 		inlining "auto"
 		linktimeoptimization "On"
+	
+	filter { "platforms:clang", "configurations:Dist" }
+		buildoptions
+		{
+			"-O3"
+		}
 	filter {}
 
 	intrinsics "On"
@@ -180,6 +188,8 @@ project "OOPWithCppSSE4_2"
 --		"%{IncludeDir.glm}",
 --		"%{IncludeDir.CTPL}",
 --		"%{IncludeDir.stb}",
+
+		"%VULKAN_SDK%/Include"
 	}
 
 	links
@@ -191,7 +201,9 @@ project "OOPWithCppSSE4_2"
 		"Winmm.lib",
 		"SetupAPI.lib",
 		"Imm32.lib",
-		"Version.lib"
+		"Version.lib",
+
+		"%VULKAN_SDK%/Lib/vulkan-1.lib"
 	}
 
 
@@ -210,13 +222,6 @@ project "OOPWithCppSSE4_2"
 		buildoptions
 		{
 			"/arch:SSE4.2"
-		}
-	
-	
-	filter { "platforms:clang AND configureation" }
-		buildoptions
-		{
-			"-O3"
 		}
 
 	filter { "system:windows" }
@@ -249,6 +254,8 @@ project "OOPWithCppAVX2"
 --		"%{IncludeDir.glm}",
 --		"%{IncludeDir.CTPL}",
 --		"%{IncludeDir.stb}",
+
+		"%VULKAN_SDK%/Include"
 	}
 
 	links
@@ -260,7 +267,9 @@ project "OOPWithCppAVX2"
 		"Winmm.lib",
 		"SetupAPI.lib",
 		"Imm32.lib",
-		"Version.lib"
+		"Version.lib",
+
+		"%VULKAN_SDK%/Lib/vulkan-1.lib"
 	}
 
 	defines
@@ -295,11 +304,15 @@ project "OOPWithCppAVX512"
 	{
 		"OOPWithCpp/src",
 		"OOPWithCpp/src/**",
+
+
 		
 		"%{IncludeDir.SDL}",
 --		"%{IncludeDir.glm}",
 --		"%{IncludeDir.CTPL}",
 --		"%{IncludeDir.stb}",
+
+		"%VULKAN_SDK%/Include"
 	}
 
 	links
@@ -311,7 +324,9 @@ project "OOPWithCppAVX512"
 		"Winmm.lib",
 		"SetupAPI.lib",
 		"Imm32.lib",
-		"Version.lib"
+		"Version.lib",
+
+		"%VULKAN_SDK%/Lib/vulkan-1.lib"
 	}
 
 	defines
