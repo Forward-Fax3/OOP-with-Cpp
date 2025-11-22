@@ -98,12 +98,7 @@ workspace "OOPWithCpp"
 		symbols "Off"
 		inlining "auto"
 		linktimeoptimization "On"
-	
-	filter { "platforms:clang", "configurations:Dist" }
-		buildoptions
-		{
-			"-O3"
-		}
+		
 	filter {}
 
 	intrinsics "On"
