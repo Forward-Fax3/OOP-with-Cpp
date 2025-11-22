@@ -1,10 +1,12 @@
-#include "VulkanContext.hpp"
-#include "VulkanCore.hpp"
+#include <iostream>
+#include <limits>
 
 #include <vulkan/vulkan.hpp>
 #include <SDL3/SDL_vulkan.h>
 
-#include <iostream>
+#include "VulkanContext.hpp"
+#include "VulkanCore.hpp"
+#include "log.hpp"
 
 
 namespace OWC::Graphics
@@ -16,10 +18,9 @@ namespace OWC::Graphics
 		(void)windowHandle; // unused for now
 		const auto runtimeVersion = vk::enumerateInstanceVersion();
 		if (runtimeVersion < g_VulkanVersion)
-		{
-			// TODO: error message
-			exit(4);
-		}
+			Log<LogLevel::Critical>("Vulkan runtime version {}.{}.{} is lower than the required version {}.{}.{}",
+				VK_VERSION_MAJOR(runtimeVersion), VK_VERSION_MINOR(runtimeVersion), VK_VERSION_PATCH(runtimeVersion),
+				VK_VERSION_MAJOR(g_VulkanVersion), VK_VERSION_MINOR(g_VulkanVersion), VK_VERSION_PATCH(g_VulkanVersion));
 
 		VulkanCore::Init();
 		auto& vkCore = VulkanCore::GetInstance();
@@ -71,11 +72,11 @@ namespace OWC::Graphics
 		vkCore.SetPhysicalDevice(physcalDevices.front()); // TODO: select proper physical device
 
 		auto queueFamilies = vkCore.GetPhysicalDev().getQueueFamilyProperties();
-		constexpr size_t sizeMax = std::numeric_limits<size_t>::max();
+		constexpr size_t sizeMax = std::numeric_limits<std::size_t>::max();
 		[[maybe_unused]] size_t presentQueueFamilyIndex = sizeMax;
 		size_t graphicsQueueFamilyIndex = sizeMax;
-		[[maybe_unused]] size_t computeQueueFamilyIndex = sizeMax;
-		[[maybe_unused]] size_t transferQueueFamilyIndex = sizeMax;
+		size_t computeQueueFamilyIndex = sizeMax;
+		size_t transferQueueFamilyIndex = sizeMax;
 
 		for (size_t i = 0; i < queueFamilies.size(); i++) // try to find all queue families in one loop and have different queue families if possible
 		{

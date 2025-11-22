@@ -2,6 +2,8 @@
 
 #include "Window.hpp"
 
+#include "log.hpp"
+
 
 namespace OWC
 {
@@ -17,6 +19,9 @@ namespace OWC
 			m_Properties.Width, m_Properties.Height,
 			SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY
 		));
+
+		if (m_Window == nullptr)
+			Log<LogLevel::Critical>("unable to open window: {}", SDL_GetError());
 
 		{
 			auto temp = OWCG::GraphicsContext::CreateGraphicsContext(*m_Window);
