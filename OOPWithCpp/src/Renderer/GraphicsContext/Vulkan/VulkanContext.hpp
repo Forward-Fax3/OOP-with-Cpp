@@ -12,5 +12,8 @@ namespace OWC::Graphics
 
 		void SwapBuffers() override;
 		void WaitForIdle() override;
+
+	private:
+		std::enable_if_t<!IsDistributionMode(), vk::DebugUtilsMessengerEXT> m_DebugCallback;
 	};
 }

@@ -15,6 +15,11 @@ namespace OWC
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 8);
 			std::cout << "[Trace]: " << std::format(str, std::forward<Args>(args)...) << '\n';
 		}
+		else if constexpr (level == LogLevel::Debug)
+		{
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 232);
+			std::cout << "[Debug]: " << std::format(str, std::forward<Args>(args)...) << '\n';
+		}
 		else if constexpr (level == LogLevel::Warn)
 		{
 			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 14);

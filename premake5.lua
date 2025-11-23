@@ -172,6 +172,8 @@ project "OOPWithCppSSE4_2"
 		"OOPWithCpp/src/**.cpp",
 
 		"OOPWithCpp/src/**.hpp",
+
+		"OOPWithCpp/src/**.inl",
 	}
 
 	includedirs
@@ -238,6 +240,8 @@ project "OOPWithCppAVX2"
 		"OOPWithCpp/src/**.cpp",
 
 		"OOPWithCpp/src/**.hpp",
+
+		"OOPWithCpp/src/**.inl",
 	}
 
 	includedirs
@@ -293,6 +297,8 @@ project "OOPWithCppAVX512"
 		"OOPWithCpp/src/**.cpp",
 
 		"OOPWithCpp/src/**.hpp",
+
+		"OOPWithCpp/src/**.inl",
 	}
 
 	includedirs

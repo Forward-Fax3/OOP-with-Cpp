@@ -1,14 +1,12 @@
 #include <format>
 
-#include "core.hpp"
-
-
 
 namespace OWC
 {
 	enum class LogLevel : uint8_t
 	{
 		Trace,
+		Debug,
 		Warn,
 		Error,
 		Critical
