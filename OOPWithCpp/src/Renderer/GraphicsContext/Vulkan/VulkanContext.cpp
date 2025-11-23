@@ -7,7 +7,7 @@
 
 #include "VulkanContext.hpp"
 #include "VulkanCore.hpp"
-#include "log.hpp"
+#include "Log.hpp"
 
 
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;

@@ -1,3 +1,4 @@
+#pragma once
 #include <format>
 
 
@@ -17,4 +18,4 @@ namespace OWC
 	void Log(const std::format_string<Args...> str, Args&&... args);
 }
 
-#include "log.inl"
+#include "Log.inl"

@@ -2,7 +2,7 @@
 
 #include "Window.hpp"
 
-#include "log.hpp"
+#include "Log.hpp"
 
 
 namespace OWC
