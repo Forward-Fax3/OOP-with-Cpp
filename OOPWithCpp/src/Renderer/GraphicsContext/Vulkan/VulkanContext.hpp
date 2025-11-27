@@ -43,7 +43,8 @@ namespace OWC::Graphics
 		void EnableVulkanDebugging();
 #endif
 		void SurfaceInit(SDL_Window& windowHandle);
-		// void SelectPhysicalDevice(); TODO: implement physical device selection
+		void SelectPhysicalDevice();
+		std::pair<bool, uint32_t> IsPhysicalDeviceSuitable(const vk::PhysicalDevice& device);
 		QueueFamilyIndices FindQueueFamilies();
 		void CheckQueueFamilyValidity(const std::vector<vk::QueueFamilyProperties> queueFamilies, QueueFamilyIndices& indices);
 		void CreateLogicalDevice(QueueFamilyIndices& indices);

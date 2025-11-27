@@ -163,8 +163,7 @@ namespace OWC::Graphics
 			EnableVulkanDebugging();
 #endif
 			SurfaceInit(windowHandle);
-			auto physcalDevices = VulkanCore::GetConstInstance().GetVKInstance().enumeratePhysicalDevices();
-			VulkanCore::GetInstance().SetPhysicalDevice(physcalDevices.front()); // TODO: select proper physical device
+			SelectPhysicalDevice();
 			auto queueFamilyIndices = FindQueueFamilies();
 			CreateLogicalDevice(queueFamilyIndices);
 			SetupSwapchain(windowHandle, queueFamilyIndices);
@@ -315,6 +314,55 @@ namespace OWC::Graphics
 		VkSurfaceKHR surface{};
 		SDL_Vulkan_CreateSurface(&windowHandle, VulkanCore::GetInstance().GetVKInstance(), nullptr, &surface);
 		VulkanCore::GetInstance().SetSurface(vk::SurfaceKHR(surface));
+	}
+
+	void VulkanContext::SelectPhysicalDevice()
+	{
+		const std::vector<vk::PhysicalDevice> physicalDevices = VulkanCore::GetConstInstance().GetVKInstance().enumeratePhysicalDevices();
+
+		if (physicalDevices.empty())
+			Log<LogLevel::Critical>("Failed to find GPUs with Vulkan support");
+
+		uint32_t highestScore = 0;
+		for (const auto& device : physicalDevices)
+		{
+			auto [isSuitable, score] = IsPhysicalDeviceSuitable(device);
+			if (isSuitable && score > highestScore)
+			{
+				highestScore = score;
+				VulkanCore::GetInstance().SetPhysicalDevice(device);
+			}
+		}
+
+		if (!VulkanCore::GetConstInstance().GetPhysicalDev())
+			Log<LogLevel::Critical>("Failed to find a suitable GPU");
+		else
+		{
+			auto deviceProperties = VulkanCore::GetConstInstance().GetPhysicalDev().getProperties();
+
+			Log<LogLevel::Debug>("Selected GPU: {} (ID: {}, GPU Type: {})",
+				deviceProperties.deviceName.data(),
+				deviceProperties.deviceID,
+				vk::to_string(deviceProperties.deviceType));
+			Log<LogLevel::NewLine>();
+		}
+	}
+
+	std::pair<bool, uint32_t> VulkanContext::IsPhysicalDeviceSuitable(const vk::PhysicalDevice& device)
+	{
+		uint32_t score = 0;
+		auto deviceProperties = device.getProperties2();
+		auto supportedExtensions = device.enumerateDeviceExtensionProperties();
+
+		if (deviceProperties.properties.deviceType == vk::PhysicalDeviceType::eDiscreteGpu)
+			score += 1000;
+
+		score += deviceProperties.properties.limits.maxImageDimension2D;
+
+		if (!IsExtentionAvailable(supportedExtensions, vk::KHRSwapchainExtensionName))
+			return { false, 0 };
+
+		return { true, score };
 	}
 
 	VulkanContext::QueueFamilyIndices VulkanContext::FindQueueFamilies()
@@ -500,6 +548,7 @@ namespace OWC::Graphics
 		if (surfaceCapabilities.surfaceCapabilities.currentExtent.width == 0 || surfaceCapabilities.surfaceCapabilities.currentExtent.height == 0)
 			Log<LogLevel::Critical>("Failed to get valid surface extents for the swapchain");
 
+		// SDL gives the actual window size, so we can use that directly
 		vk::Extent2D swapchainExtent = surfaceCapabilities.surfaceCapabilities.currentExtent;
 		Log<LogLevel::Debug>("Vulkan Swapchain Surface Capabilities:");
 		Log<LogLevel::Debug>(" Current Extent: {}x{}", swapchainExtent.width, swapchainExtent.height);
@@ -557,8 +606,7 @@ namespace OWC::Graphics
 
 		Log<LogLevel::Debug>("Vulkan Swapchain created with {} images", VulkanCore::GetConstInstance().GetSwapchainImages().size());
 
-		std::vector<vk::ImageView> swapchainImageViews;
-		swapchainImageViews.reserve(VulkanCore::GetConstInstance().GetSwapchainImages().size());
+		std::vector<vk::ImageView>& swapchainImageViews = VulkanCore::GetInstance().GetSwapchainImageViews();
 
 		for (const auto& image : VulkanCore::GetConstInstance().GetSwapchainImages())
 		{
