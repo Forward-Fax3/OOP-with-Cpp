@@ -23,17 +23,20 @@ namespace OWC
 		if (m_Window == nullptr)
 			Log<LogLevel::Critical>("unable to open window: {}", SDL_GetError());
 
-		{
-			auto temp = OWCG::GraphicsContext::CreateGraphicsContext(*m_Window);
-			m_GraphicsContext.swap(temp);
-		}
+		m_GraphicsContext = OWCG::GraphicsContext::CreateGraphicsContext(*m_Window);
+	}
 
+	Window::~Window()
+	{
+		m_GraphicsContext.reset();
+		SDL_DestroyWindow(m_Window.release());
+		SDL_Quit();
 	}
 
 	void Window::Update() const
 	{
 		PollEvents();
-		// TODO: add the rest of the update logic (e.g., rendering, state updates)
+		m_GraphicsContext->SwapPresentImage();
 	}
 
 	bool Window::Resize(int width, int height)

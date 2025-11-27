@@ -21,13 +21,16 @@ namespace OWC
 	public:
 		Window() = delete;
 		explicit Window(const WindowProperties& properties);
-		~Window() = default;
+		~Window();
 
 		void Update() const;
 
 		inline void SetEventCallback(const std::function<void(BaseEvent&)>& callback) { m_WindowEvent.SetCallback(callback); }
 
 		bool Resize(int width, int height);
+
+		Graphics::GraphicsContext& GetGraphicsContext() const { return *m_GraphicsContext; }
+		std::weak_ptr<Graphics::GraphicsContext> GetGraphicsContextPtr() const { return m_GraphicsContext; }
 
 	private:
 		void PollEvents() const;
@@ -36,6 +39,6 @@ namespace OWC
 		WindowEvent m_WindowEvent;
 		WindowProperties m_Properties;
 		std::unique_ptr<SDL_Window, decltype([](SDL_Window* windowPtr){ SDL_DestroyWindow(windowPtr); })> m_Window = nullptr;
-		std::unique_ptr<Graphics::GraphicsContext> m_GraphicsContext = nullptr;
+		std::shared_ptr<Graphics::GraphicsContext> m_GraphicsContext = nullptr;
 	};
 }

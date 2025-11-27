@@ -1,8 +1,7 @@
 #pragma once
 #include <memory>
-#include <SDL3/SDL.h>
 
-#include "core.hpp"
+#include <SDL3/SDL_video.h>
 
 
 namespace OWC::Graphics
@@ -12,7 +11,14 @@ namespace OWC::Graphics
 	public:
 		virtual ~GraphicsContext() = default;
 
-		virtual void SwapBuffers() = 0;
+		// delete copy/move constructor and copy/move assignment operator
+		GraphicsContext(const GraphicsContext&) = delete;
+		GraphicsContext& operator=(const GraphicsContext&) = delete;
+		GraphicsContext(GraphicsContext&&) = delete;
+		GraphicsContext& operator=(GraphicsContext&&) = delete;
+
+		virtual void FinishRender() = 0;
+		virtual void SwapPresentImage() = 0;
 
 		virtual void WaitForIdle() = 0;
 

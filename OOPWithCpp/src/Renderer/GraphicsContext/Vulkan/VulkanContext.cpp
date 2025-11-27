@@ -214,7 +214,12 @@ namespace OWC::Graphics
 		VulkanCore::Shutdown();
 	}
 
-	void VulkanContext::SwapBuffers() // TODO: rename and implement
+	void VulkanContext::FinishRender()
+	{
+		
+	}
+
+	void VulkanContext::SwapPresentImage()
 	{
 
 	}

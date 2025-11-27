@@ -34,7 +34,8 @@ namespace OWC::Graphics
 		VulkanContext(VulkanContext&&) = delete;
 		VulkanContext& operator=(VulkanContext&&) = delete;
 
-		void SwapBuffers() override;
+		void FinishRender() override;
+		void SwapPresentImage() override;
 		void WaitForIdle() override;
 
 	private:
