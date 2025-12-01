@@ -1,5 +1,7 @@
 ﻿#pragma once
 #include "GraphicsContext.hpp"
+#include "Renderer.hpp"
+
 #include <vulkan/vulkan.hpp>
 
 
@@ -40,6 +42,7 @@ namespace OWC::Graphics
 #ifndef DIST
 		void FlushValidationMessages() override;
 #endif
+		void AddRenderPassData(const std::shared_ptr<RenderPassData>& renderPassData) override;
 
 	private:
 		void StartInstance();
@@ -51,7 +54,7 @@ namespace OWC::Graphics
 		std::pair<bool, uint32_t> IsPhysicalDeviceSuitable(const vk::PhysicalDevice& device);
 		void FindQueueFamilies();
 		void CheckQueueFamilyValidity(const std::vector<vk::QueueFamilyProperties> queueFamilies);
-		void GetAndStoreGlobalQueueFamilies();
+		void GetAndStoreGlobalQueueFamilies() const;
 		void CreateLogicalDevice();
 		void CreateSwapchain();
 		void CreateFramebuffers(uint32_t width, uint32_t height);

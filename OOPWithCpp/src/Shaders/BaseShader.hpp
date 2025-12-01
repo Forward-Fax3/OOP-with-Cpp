@@ -3,9 +3,6 @@
 #include <vector>
 #include <memory>
 
-// TODO: remove this and make it api agnostic
-#include "vulkan\vulkan.hpp"
-
 
 namespace OWC::Graphics
 {
@@ -60,8 +57,6 @@ namespace OWC::Graphics
 		BaseShader& operator=(BaseShader&) = default;
 		BaseShader(BaseShader&&) noexcept = default;
 		BaseShader& operator=(BaseShader&&) noexcept = default;
-
-		[[nodiscard]] virtual vk::Pipeline GetPipeline() const = 0;
 
 		static std::unique_ptr<BaseShader> CreateShader(const std::vector<ShaderData>& shaderDatas);
 	};

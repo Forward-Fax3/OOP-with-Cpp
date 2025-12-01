@@ -1,6 +1,10 @@
-﻿#include "Log.hpp"
+﻿#pragma once
+#include "Log.hpp"
+#include "Renderer.hpp"
+#include "VulkanRenderPass.hpp"
 
 #include <vulkan/vulkan.hpp>
+#include <mutex>
 #include <memory>
 
 
@@ -61,14 +65,12 @@ namespace OWC::Graphics
 
 		static void Shutdown() { s_Instance.reset(); }
 
-		[[nodiscard]] vk::CommandBuffer GetGraphicsCommandBuffer();
-		[[nodiscard]] vk::CommandBuffer GetComputeCommandBuffer();
-		[[nodiscard]] vk::CommandBuffer GetTransferCommandBuffer();
+		void AddRenderPassData(const std::shared_ptr<RenderPassData>& data);
+		void ResetRenderPassDatas();
 
-		void BeginRenderPass(const vk::CommandBuffer& commandBuf, vk::Pipeline pipeline) const;
-		void EndRenderPass(const vk::CommandBuffer& commandBuf) const;
-
-		void SubmitGraphicsCommandBuffer(const vk::CommandBuffer& commandBuf) const;
+		[[nodiscard]] vk::CommandBuffer GetGraphicsCommandBuffer() const;
+		[[nodiscard]] vk::CommandBuffer GetComputeCommandBuffer() const;
+		[[nodiscard]] vk::CommandBuffer GetTransferCommandBuffer() const;
 
 		[[nodiscard]] inline const vk::Instance& GetVKInstance() const { return m_Instance; }
 		[[nodiscard]] inline const vk::SurfaceKHR& GetSurface() const { return m_Surface; }
@@ -88,14 +90,14 @@ namespace OWC::Graphics
 		[[nodiscard]] inline const std::vector<vk::Framebuffer>& GetSwapchainFramebuffers() const { return m_SwapchainFramebuffers; }
 		[[nodiscard]] inline const vk::RenderPass& GetRenderPass() const { return m_RenderPass; }
 		[[nodiscard]] inline size_t GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
-
+		[[nodiscard]] inline const vk::Semaphore& GetImageAvailableSemaphore() const { return m_ImageAvailableSemaphore; }
+		[[nodiscard]] inline const vk::Framebuffer& GetCurrentFrameBuffer() const { return m_SwapchainFramebuffers[m_CurrentFrameIndex]; }
 
 		[[nodiscard]] inline std::vector<vk::Image>& GetSwapchainImages() { return m_SwapchainImages; }
 		[[nodiscard]] inline std::vector<vk::ImageView>& GetSwapchainImageViews() { return m_SwapchainImageViews; }
 		[[nodiscard]] inline std::vector<vk::Framebuffer>& GetSwapchainFramebuffers() { return m_SwapchainFramebuffers; }
 		[[nodiscard]] inline size_t& GetCurrentFrameIndex() { return m_CurrentFrameIndex; }
-		[[nodiscard]] inline const vk::Semaphore& GetImageAvailableSemaphore() const { return m_ImageAvailableSemaphore; }
-		[[nodiscard]] inline const vk::Fence& GetInFlightFence() const { return m_InFlightFence; }
+		[[nodiscard]] inline std::pair<std::reference_wrapper<std::vector<std::shared_ptr<VulkanRenderPass>>>, std::unique_lock<std::mutex>> GetRenderPassDatas() { return { std::ref(m_RenderPassDatas), std::unique_lock(m_RenderPassesMutex) }; }
 
 		inline void SetInstance(const vk::Instance& instance) { m_Instance = instance; }
 		inline void SetSurface(const vk::SurfaceKHR& surface) { m_Surface = surface; }
@@ -154,8 +156,11 @@ namespace OWC::Graphics
 		vk::RenderPass m_RenderPass = vk::RenderPass();
 
 		vk::Semaphore m_ImageAvailableSemaphore = vk::Semaphore();
-		mutable vk::Fence m_InFlightFence = vk::Fence();
 		size_t m_CurrentFrameIndex = 0;
+
+		std::vector<std::shared_ptr<VulkanRenderPass>> m_RenderPassDatas = {};
+
+		std::mutex m_RenderPassesMutex;
 
 		static std::unique_ptr<VulkanCore> s_Instance;
 	};

@@ -1,4 +1,9 @@
 ﻿#pragma once
+#define GRAPHICSCONTEXT_HPP
+#ifndef RENDERER_HPP
+#include "Renderer.hpp"
+#endif
+
 #include <memory>
 
 #include <SDL3/SDL_video.h>
@@ -6,6 +11,8 @@
 
 namespace OWC::Graphics
 {
+	class RenderPassData;
+
 	class GraphicsContext
 	{
 	public:
@@ -24,6 +31,8 @@ namespace OWC::Graphics
 #ifndef DIST
 		virtual void FlushValidationMessages() = 0;
 #endif
+
+		virtual void AddRenderPassData(const std::shared_ptr<RenderPassData>& renderPassData) = 0;
 
 		static std::unique_ptr<GraphicsContext> CreateGraphicsContext(SDL_Window& windowHandle);
 

@@ -1,10 +1,14 @@
 ﻿#include "Application.hpp"
 #include "Renderer.hpp"
 
+#include "VulkanRenderPass.hpp"
 
-namespace OWC
+
+namespace OWC::Graphics
 {
-	std::shared_ptr<Graphics::GraphicsContext> Renderer::s_GC = nullptr;
+	std::shared_ptr<GraphicsContext> Renderer::s_GC = nullptr;
+
+	RendererAPI Renderer::s_API = RendererAPI::Vulkan;
 
 	void Renderer::Init()
 	{
@@ -19,5 +23,40 @@ namespace OWC
 	void Renderer::FinishRender()
 	{
 		s_GC->FinishRender();
+	}
+
+	std::shared_ptr<RenderPassData> Renderer::BeginPass(RenderPassType type /*= RenderPassType::Graphics*/)
+	{
+		if (s_API == RendererAPI::Vulkan)
+		{
+			return std::make_shared<VulkanRenderPass>(type);
+		}
+		return nullptr;
+	}
+
+	void Renderer::Draw(const std::shared_ptr<RenderPassData>& data, uint32_t vertexCount, uint32_t instanceCount /*= 1*/, uint32_t firstVertex /*= 0*/, uint32_t firstInstance /*= 0*/)
+	{
+		data->Draw(vertexCount, instanceCount, firstVertex, firstInstance);
+	}
+
+	void Renderer::PipelineBind(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader)
+	{
+		data->AddPipeline(shader);
+	}
+
+	void Renderer::EndPass(const std::shared_ptr<RenderPassData>& data)
+	{
+		data->EndRenderPass();
+	}
+
+	void Renderer::SubmitRenderPass(const std::shared_ptr<RenderPassData>& data)
+	{
+		data->submitRenderPass();
+		s_GC->AddRenderPassData(data);
+	}
+
+	void Renderer::RestartRenderPass(const std::shared_ptr<RenderPassData>& data)
+	{
+		data->RestartRenderPass();
 	}
 };

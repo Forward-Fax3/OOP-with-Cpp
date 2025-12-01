@@ -216,7 +216,8 @@ namespace OWC::Graphics
 		WaitForIdle();
 		auto& vkCore = VulkanCore::GetConstInstance();
 
-		vkCore.GetDevice().destroyFence(vkCore.GetInFlightFence());
+		VulkanCore::GetInstance().ResetRenderPassDatas();
+
 		vkCore.GetDevice().destroySemaphore(vkCore.GetImageAvailableSemaphore());
 
 		vkCore.GetDevice().destroyCommandPool(vkCore.GetGraphicsCommandPool());
@@ -247,9 +248,12 @@ namespace OWC::Graphics
 
 	void VulkanContext::FinishRender()
 	{
-		const auto& vkCore = VulkanCore::GetConstInstance();
+		auto& vkCore = VulkanCore::GetInstance();
+		auto [temp, _] = vkCore.GetRenderPassDatas();
+		std::vector<std::shared_ptr<VulkanRenderPass>>& renderPassData = temp.get();
 
-		while (vkCore.GetDevice().waitForFences(vkCore.GetInFlightFence(), vk::True, 16'666) == vk::Result::eTimeout);
+		for (const auto& renderPassData : renderPassData)
+			while (vkCore.GetDevice().waitForFences(renderPassData->GetFence(), vk::True, 16'666) == vk::Result::eTimeout);
 
 		auto indices = static_cast<uint32_t>(vkCore.GetCurrentFrameIndex());
 		auto result = VulkanCore::GetConstInstance().GetPresentQueue().presentKHR(
@@ -274,6 +278,8 @@ namespace OWC::Graphics
 				.setPImageIndices(&indices)
 			);
 		}
+
+		renderPassData.clear();
 	}
 
 	void VulkanContext::SwapPresentImage()
@@ -316,9 +322,9 @@ namespace OWC::Graphics
 			const auto extentionsTemp = SDL_Vulkan_GetInstanceExtensions(&numberOfSDLExtensions);
 
 			if constexpr (!IsDistributionMode()) // +3 for debug utils and get physical device properties 2 and surface extensions
-				extentions.reserve(numberOfSDLExtensions + 3);
+				extentions.reserve(static_cast<size_t>(numberOfSDLExtensions) + 3);
 			else // +2 for get physical device properties 2 and surface extensions
-				extentions.reserve(numberOfSDLExtensions + 2);
+				extentions.reserve(static_cast<size_t>(numberOfSDLExtensions) + 2);
 
 			for (size_t i = 0; i < numberOfSDLExtensions; i++)
 				extentions.emplace_back(extentionsTemp[i]);
@@ -599,7 +605,7 @@ namespace OWC::Graphics
 			m_QueueFamilyIndices.uniqueIndices.emplace_back(familyIndex);
 	}
 
-	void VulkanContext::GetAndStoreGlobalQueueFamilies()
+	void VulkanContext::GetAndStoreGlobalQueueFamilies() const
 	{
 		std::map<uint32_t, uint32_t> queueFamilyUsageCount;
 
@@ -830,5 +836,10 @@ namespace OWC::Graphics
 		vkCore.GetSwapchainFramebuffers().clear();
 		CreateSwapchain();
 		CreateFramebuffers(app.GetWindowWidth(), app.GetWindowHeight());
+	}
+
+	void VulkanContext::AddRenderPassData(const std::shared_ptr<RenderPassData>& renderPassData)
+	{
+		VulkanCore::GetInstance().AddRenderPassData(renderPassData);
 	}
 }

@@ -27,7 +27,7 @@ namespace OWC
 
 		m_Window = std::make_unique<Window>(props);
 		m_Window->SetEventCallback([](BaseEvent& e) { s_Instance->OnEvent(e); });
-		Renderer::Init();
+		Graphics::Renderer::Init();
 		m_LayerStack = std::make_unique<LayerStack>();
 		PushLayer(std::make_shared<TestLayer>());
 	}
@@ -37,7 +37,7 @@ namespace OWC
 		m_Shader.reset();
 		m_LayerStack->ClearLayers();
 		m_LayerStack.reset();
-		Renderer::Shutdown();
+		Graphics::Renderer::Shutdown();
 		m_Window.reset();
 	}
 
@@ -48,7 +48,7 @@ namespace OWC
 			m_LayerStack->OnUpdate();
 			m_LayerStack->ImGuiRender();
 
-			Renderer::FinishRender();
+			Graphics::Renderer::FinishRender();
 			m_Window->Update();
 		}
 	}

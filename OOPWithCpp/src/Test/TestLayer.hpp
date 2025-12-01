@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Layer.hpp"
 #include "BaseShader.hpp"
-#include <vulkan/vulkan.hpp>
+#include "Renderer.hpp"
 
 #include <memory>
 
@@ -12,7 +12,7 @@ namespace OWC
 	{
 	public:
 		TestLayer();
-		~TestLayer() override;
+		~TestLayer() override = default;
 		TestLayer(const TestLayer&) = delete;
 		TestLayer& operator=(const TestLayer&) = delete;
 		TestLayer(TestLayer&&) = delete;
@@ -24,6 +24,6 @@ namespace OWC
 
 	private:
 		std::unique_ptr<Graphics::BaseShader> m_Shader = nullptr;
-		vk::CommandBuffer m_CommandBuffer = vk::CommandBuffer();
+		std::shared_ptr<Graphics::RenderPassData> m_renderPass = nullptr;
 	};
 }

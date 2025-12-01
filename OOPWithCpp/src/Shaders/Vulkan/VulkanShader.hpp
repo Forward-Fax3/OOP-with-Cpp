@@ -20,14 +20,14 @@ namespace OWC::Graphics
 		};
 
 	public:
-		VulkanShader(const std::vector<ShaderData>& shaderDatas);
+		explicit VulkanShader(const std::vector<ShaderData>& shaderDatas);
 		~VulkanShader() override;
 		VulkanShader(VulkanShader&) = default;
 		VulkanShader& operator=(VulkanShader&) = default;
 		VulkanShader(VulkanShader&&) noexcept = default;
 		VulkanShader& operator=(VulkanShader&&) noexcept = default;
 
-		[[nodiscard]] vk::Pipeline GetPipeline() const override { return m_Pipeline; }
+		[[nodiscard]] vk::Pipeline GetPipeline() const { return m_Pipeline; }
 
 	private:
 		void CreateVulkanPipeline(const std::vector<VulkanShaderData>& vulkanShaderDatas);
@@ -37,8 +37,8 @@ namespace OWC::Graphics
 
 	private:
 		// store pipeline and shader module handles here
-		vk::Pipeline m_Pipeline;
-		vk::PipelineLayout m_PipelineLayout;
+		vk::Pipeline m_Pipeline = vk::Pipeline();
+		vk::PipelineLayout m_PipelineLayout = vk::PipelineLayout();
 		std::vector<vk::ShaderModule> m_ShaderModules = {};
 	};
 }

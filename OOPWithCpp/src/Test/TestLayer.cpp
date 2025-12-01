@@ -1,52 +1,48 @@
 ﻿#include "TestLayer.hpp"
 #include "Log.hpp"
 #include "LoadFile.hpp"
-#include "VulkanCore.hpp"
+#include "Renderer.hpp"
 
 
 namespace OWC
 {
 	TestLayer::TestLayer()
 	{
-		std::vector<Graphics::ShaderData> shaderDatas = {
+		using namespace OWC::Graphics;
+
+		std::vector<ShaderData> shaderDatas = {
 			{
 				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/test.vert.spv"),
-				.type = Graphics::ShaderData::ShaderType::Vertex,
-				.language = Graphics::ShaderData::ShaderLanguage::SPIRV
+				.type = ShaderData::ShaderType::Vertex,
+				.language = ShaderData::ShaderLanguage::SPIRV
 			},
 			{
 				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/test.frag.spv"),
-				.type = Graphics::ShaderData::ShaderType::Fragment,
-				.language = Graphics::ShaderData::ShaderLanguage::SPIRV
+				.type = ShaderData::ShaderType::Fragment,
+				.language = ShaderData::ShaderLanguage::SPIRV
 			}
 		};
 
-		m_Shader = Graphics::BaseShader::CreateShader(shaderDatas);
+		m_Shader = BaseShader::CreateShader(shaderDatas);
 
-		m_CommandBuffer = Graphics::VulkanCore::GetInstance().GetGraphicsCommandBuffer();
-	}
-
-	TestLayer::~TestLayer()
-	{
-		Graphics::VulkanCore::GetInstance().GetDevice().freeCommandBuffers(
-			Graphics::VulkanCore::GetInstance().GetGraphicsCommandPool(),
-			m_CommandBuffer);
+		m_renderPass = (Renderer::BeginPass(RenderPassType::Graphics));
+		Renderer::PipelineBind(m_renderPass, *m_Shader);
+		Renderer::Draw(m_renderPass, 6);
+		Renderer::EndPass(m_renderPass);
 	}
 
 	void TestLayer::OnUpdate()
 	{
-		// TODO: Move this to Renderer instead of it being done it vkCore
-		const Graphics::VulkanCore& vkCore = Graphics::VulkanCore::GetConstInstance();
-		vkCore.BeginRenderPass(m_CommandBuffer, m_Shader->GetPipeline());
-		m_CommandBuffer.draw(6, 1, 0, 0);
-		vkCore.EndRenderPass(m_CommandBuffer);
-		vkCore.SubmitGraphicsCommandBuffer(m_CommandBuffer);
+		using namespace OWC::Graphics;
+		Renderer::RestartRenderPass(m_renderPass);
+		Renderer::SubmitRenderPass(m_renderPass);
 	}
 
 	void TestLayer::ImGuiRender()
-	{
+	{ // ImGui not implemented yet
 	}
+
 	void TestLayer::OnEvent(class BaseEvent&)
-	{
+	{ // not needed
 	}
 }
