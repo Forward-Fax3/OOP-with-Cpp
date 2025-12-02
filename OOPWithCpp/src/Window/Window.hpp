@@ -35,6 +35,11 @@ namespace OWC
 		int GetWidth() const { return m_Properties.Width; }
 		int GetHeight() const { return m_Properties.Height; }
 
+		bool IsWindowMinimized() const { return m_IsMinimized; }
+
+		void Minimize();
+		void Restore();
+
 	private:
 		void PollEvents() const;
 
@@ -43,5 +48,6 @@ namespace OWC
 		WindowProperties m_Properties;
 		std::unique_ptr<SDL_Window, decltype([](SDL_Window* windowPtr){ SDL_DestroyWindow(windowPtr); })> m_Window = nullptr;
 		std::shared_ptr<Graphics::GraphicsContext> m_GraphicsContext = nullptr;
+		bool m_IsMinimized = false;
 	};
 }

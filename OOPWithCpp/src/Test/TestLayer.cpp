@@ -1,8 +1,11 @@
 ﻿#include "TestLayer.hpp"
 #include "Application.hpp"
-#include "Log.hpp"
 #include "LoadFile.hpp"
 #include "Renderer.hpp"
+
+#include "BaseEvent.hpp"
+#include "WindowMinimizeEvent.hpp"
+#include "WindowRestoreEvent.hpp"
 
 
 namespace OWC
@@ -43,14 +46,28 @@ namespace OWC
 	{ // ImGui not implemented yet
 	}
 
-	void TestLayer::OnEvent(class BaseEvent&)
-	{ // not needed for this test layer
+	void TestLayer::OnEvent(class BaseEvent& e)
+	{
+		EventDispatcher dispatcher(e);
+
+		dispatcher.Dispatch<WindowRestore>([this](const WindowRestore& /*event*/) {
+			this->SetActive(true);
+			return false;
+			});
+
+		if (!IsActive())
+			return;
+
+		dispatcher.Dispatch<WindowMinimize>([this](const WindowMinimize& /*event*/) {
+			this->SetActive(false);
+			return false;
+			});
 	}
 
 	void TestLayer::setupRenderPass()
 	{
 		using namespace OWC::Graphics;
-		m_renderPass = (Renderer::BeginPass(RenderPassType::Graphics));
+		m_renderPass = Renderer::BeginPass(RenderPassType::Graphics);
 		Renderer::PipelineBind(m_renderPass, *m_Shader);
 		Renderer::Draw(m_renderPass, 6);
 		Renderer::EndPass(m_renderPass);

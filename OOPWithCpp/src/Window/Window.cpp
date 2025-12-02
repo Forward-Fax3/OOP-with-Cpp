@@ -36,7 +36,9 @@ namespace OWC
 	void Window::Update() const
 	{
 		PollEvents();
-		m_GraphicsContext->SwapPresentImage();
+
+		if (!m_IsMinimized)
+			m_GraphicsContext->SwapPresentImage();
 
 #ifndef DIST
 		m_GraphicsContext->FlushValidationMessages();
@@ -47,12 +49,27 @@ namespace OWC
 	{
 		if (m_Window)
 		{
+			width = std::max(width, 210);
+			height = std::max(height, 144);
 			SDL_SetWindowSize(m_Window.get(), width, height);
 			m_Properties.Width = width;
 			m_Properties.Height = height;
 		}
 		// always return false so that layers can handle the resize event if needed
+		m_GraphicsContext->resize(width, height);
 		return false;
+	}
+
+	void Window::Minimize()
+	{
+		m_IsMinimized = true;
+		m_GraphicsContext->Minimize();
+	}
+
+	void Window::Restore()
+	{
+		m_IsMinimized = false;
+		m_GraphicsContext->Restore();
 	}
 
 	void Window::PollEvents() const

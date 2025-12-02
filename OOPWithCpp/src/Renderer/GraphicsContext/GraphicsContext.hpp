@@ -36,6 +36,10 @@ namespace OWC::Graphics
 
 		[[nodiscard]] virtual bool RenderPassNeedsRecreating() const = 0;
 
+		virtual void Minimize() = 0;
+		virtual void Restore() = 0;
+		virtual void resize(int width, int height) = 0;
+
 		static std::unique_ptr<GraphicsContext> CreateGraphicsContext(SDL_Window& windowHandle);
 
 	protected:

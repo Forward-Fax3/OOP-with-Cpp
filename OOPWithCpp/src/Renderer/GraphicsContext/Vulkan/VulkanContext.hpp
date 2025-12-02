@@ -46,6 +46,10 @@ namespace OWC::Graphics
 
 		[[nodiscard]] bool RenderPassNeedsRecreating() const override { return m_RenderPassNeedsRecreating; }
 
+		void Minimize() override;
+		void Restore() override;
+		void resize(int width, int height) override { RecreateSwapchain(width, height); }
+
 	private:
 		void StartInstance();
 #ifndef DIST
@@ -59,13 +63,15 @@ namespace OWC::Graphics
 		void GetAndStoreGlobalQueueFamilies() const;
 		void CreateLogicalDevice();
 		void CreateSwapchain();
-		void CreateFramebuffers(uint32_t width, uint32_t height);
+		void CreateFramebuffers(SDL_Window& windowHandle);
+		void CreateFramebuffers(int width, int height);
 		void CreateRenderPass();
 		void CreateCommandPools() const;
 
 		void DestroySwapchain();
 
 		void RecreateSwapchain();
+		void RecreateSwapchain(int width, int height);
 
 	private:
 #ifndef DIST
@@ -74,5 +80,6 @@ namespace OWC::Graphics
 		QueueFamilyIndices m_QueueFamilyIndices{};
 
 		bool m_RenderPassNeedsRecreating = false;
+		bool m_IsMinimized = false;
 	};
 }

@@ -22,13 +22,11 @@ namespace OWC
 	void LayerStack::OnEvent(BaseEvent& event) const
 	{
 		// top-down
-//		for (const auto& layer : std::ranges::reverse_view(m_Layers))
-		for (const auto& layer : m_Layers)
-			if (layer->IsActive())
-			{
-				layer->OnEvent(event);
-				if (event.HasBeenHandled())
-					break;
-			}
+		for (const auto& layer : std::ranges::reverse_view(m_Layers))
+		{
+			layer->OnEvent(event);
+			if (event.HasBeenHandled())
+				break;
+		}
 	}
 }

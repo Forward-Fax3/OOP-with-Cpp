@@ -1,6 +1,8 @@
 #include "WindowEvent.hpp"
 #include "WindowCloseEvent.hpp"
 #include "WindowResize.hpp"
+#include "WindowMinimizeEvent.hpp"
+#include "WindowRestoreEvent.hpp"
 
 
 namespace OWC
@@ -34,6 +36,18 @@ namespace OWC
 			break;
 		case SDL_EVENT_WINDOW_FOCUS_LOST:
 			//m_Callback();
+			break;
+		case SDL_EVENT_WINDOW_MINIMIZED:
+		{
+			WindowMinimize minimizeEvent;
+			m_Callback(minimizeEvent);
+			break;
+		}
+		case SDL_EVENT_WINDOW_RESTORED:
+		{
+			WindowRestore restoreEvent;
+			m_Callback(restoreEvent);
+		}
 			break;
 		case SDL_EVENT_USER:
 			//m_Callback();

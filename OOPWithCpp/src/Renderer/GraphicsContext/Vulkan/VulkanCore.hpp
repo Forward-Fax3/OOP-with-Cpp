@@ -117,12 +117,17 @@ namespace OWC::Graphics
 		inline void SetSwapchainFramebuffers(const std::vector<vk::Framebuffer>& swapchainFramebuffers) { m_SwapchainFramebuffers = swapchainFramebuffers; }
 		inline void SetRenderPass(const vk::RenderPass& renderPass) { m_RenderPass = renderPass; }
 
+		inline void CreateImageAvailableSemaphore()
+		{
+			m_ImageAvailableSemaphores.reserve(m_SwapchainImageViews.size());
+			vk::SemaphoreCreateInfo semaphoreInfo{};
+			semaphoreInfo.setFlags(vk::SemaphoreCreateFlags());
+			for (size_t i = 0; i < m_SwapchainImageViews.size(); ++i)
+				m_ImageAvailableSemaphores.emplace_back(m_Device.createSemaphore(semaphoreInfo));
+		}
+
 		[[nodiscard]] inline vk::Result IncrementCurrentFrameIndex()
 		{
-			if (m_ImageAvailableSemaphore)
-				m_Device.destroySemaphore(m_ImageAvailableSemaphore);
-
-			m_ImageAvailableSemaphore = m_Device.createSemaphore(vk::SemaphoreCreateInfo());
 			auto result = m_Device.acquireNextImage2KHR(
 				vk::AcquireNextImageInfoKHR()
 				.setSwapchain(m_Swapchain)
@@ -134,6 +139,22 @@ namespace OWC::Graphics
 			m_CurrentFrameIndex = result.value;
 
 			return result.result;
+		}
+
+		inline void SetNextImageAvailableSemaphore()
+		{
+			static size_t currentIndex = 0;
+			size_t semaphoreCount = m_ImageAvailableSemaphores.size();
+
+			m_ImageAvailableSemaphore = m_ImageAvailableSemaphores[currentIndex];
+			currentIndex = (currentIndex++) % semaphoreCount;
+		}
+
+		inline void DestroyImageAvailableSemaphores()
+		{
+			for (const auto& semaphore : m_ImageAvailableSemaphores)
+				m_Device.destroySemaphore(semaphore);
+			m_ImageAvailableSemaphores.clear();
 		}
 
 	private:
@@ -156,6 +177,7 @@ namespace OWC::Graphics
 		vk::RenderPass m_RenderPass = vk::RenderPass();
 
 		vk::Semaphore m_ImageAvailableSemaphore = vk::Semaphore();
+		std::vector<vk::Semaphore> m_ImageAvailableSemaphores = {};
 		size_t m_CurrentFrameIndex = 0;
 
 		std::vector<std::shared_ptr<VulkanRenderPass>> m_RenderPassDatas = {};

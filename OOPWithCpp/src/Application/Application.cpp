@@ -2,6 +2,8 @@
 #include "BaseEvent.hpp"
 #include "WindowCloseEvent.hpp"
 #include "WindowResize.hpp"
+#include "WindowMinimizeEvent.hpp"
+#include "WindowRestoreEvent.hpp"
 #include "Renderer.hpp"
 #include "Log.hpp"
 #include "TestLayer.hpp"
@@ -64,6 +66,16 @@ namespace OWC
 
 		dispacher.Dispatch<WindowResize>([](const WindowResize& e) {
 			return s_Instance->m_Window->Resize(e.GetWidth(), e.GetHeight());
+			});
+
+		dispacher.Dispatch<WindowMinimize>([](const WindowMinimize&) {
+			s_Instance->m_Window->Minimize();
+			return false; // layers may need to use the event as well
+			});
+
+		dispacher.Dispatch<WindowRestore>([](const WindowRestore&) {
+			s_Instance->m_Window->Restore();
+			return false; // layers may need to use the event as well
 			});
 
 		if (event.HasBeenHandled())

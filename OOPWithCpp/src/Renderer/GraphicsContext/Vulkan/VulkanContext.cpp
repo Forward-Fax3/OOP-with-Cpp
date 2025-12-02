@@ -169,6 +169,7 @@ namespace OWC::Graphics
 	VulkanContext::VulkanContext(SDL_Window& windowHandle)
 	{
 		VulkanCore::Init();
+		auto& vkCore = VulkanCore::GetInstance();
 		
 		try
 		{
@@ -183,8 +184,9 @@ namespace OWC::Graphics
 			GetAndStoreGlobalQueueFamilies();
 			CreateSwapchain();
 			CreateRenderPass();
-			CreateFramebuffers(1920, 1080);
+			CreateFramebuffers(windowHandle);
 			CreateCommandPools();
+			vkCore.CreateImageAvailableSemaphore();
 		}
 		catch (const vk::SystemError& err)
 		{
@@ -195,7 +197,8 @@ namespace OWC::Graphics
 			Log<LogLevel::Critical>("Vulkan Context initialization failed: {}", ex.what());
 		}
 
-		vk::Result result = VulkanCore::GetInstance().IncrementCurrentFrameIndex();
+		vkCore.SetNextImageAvailableSemaphore();
+		vk::Result result = vkCore.IncrementCurrentFrameIndex();
 
 		if (result != vk::Result::eSuccess)
 			Log<LogLevel::Critical>("VulkanContext::VulkanContext: Failed to acquire initial swapchain image!");
@@ -218,7 +221,7 @@ namespace OWC::Graphics
 
 		VulkanCore::GetInstance().ResetRenderPassDatas();
 
-		vkCore.GetDevice().destroySemaphore(vkCore.GetImageAvailableSemaphore());
+		VulkanCore::GetInstance().DestroyImageAvailableSemaphores();
 
 		vkCore.GetDevice().destroyCommandPool(vkCore.GetGraphicsCommandPool());
 		vkCore.GetDevice().destroyCommandPool(vkCore.GetComputeCommandPool());
@@ -248,6 +251,8 @@ namespace OWC::Graphics
 
 	void VulkanContext::FinishRender()
 	{
+		m_RenderPassNeedsRecreating = false;
+
 		auto& vkCore = VulkanCore::GetInstance();
 		auto [temp, _] = vkCore.GetRenderPassDatas();
 		std::vector<std::shared_ptr<VulkanRenderPass>>& renderPassDatas = temp.get();
@@ -255,49 +260,51 @@ namespace OWC::Graphics
 		for (const auto& renderPassData : renderPassDatas)
 			while (vkCore.GetDevice().waitForFences(renderPassData->GetFence(), vk::True, 16'666) == vk::Result::eTimeout);
 
-		auto indices = static_cast<uint32_t>(vkCore.GetCurrentFrameIndex());
-		auto result = VulkanCore::GetConstInstance().GetPresentQueue().presentKHR(
-			vk::PresentInfoKHR()
-			.setSwapchains(vkCore.GetSwapchain())
-			.setSwapchainCount(1)
-			.setPImageIndices(&indices)
-		);
-
-		size_t retryCount = 0;
-		while (result != vk::Result::eSuccess)
+		if (!m_IsMinimized)
 		{
-			if (retryCount++ >= 3)
-				Log<LogLevel::Critical>("VulkanContext::FinishRender: Failed to present image after 3 retries.");
-
-			RecreateSwapchain();
-
-			result = VulkanCore::GetConstInstance().GetPresentQueue().presentKHR(
+			auto indices = static_cast<uint32_t>(vkCore.GetCurrentFrameIndex());
+			auto result = VulkanCore::GetConstInstance().GetPresentQueue().presentKHR(
 				vk::PresentInfoKHR()
 				.setSwapchains(vkCore.GetSwapchain())
 				.setSwapchainCount(1)
 				.setPImageIndices(&indices)
 			);
 
-			m_RenderPassNeedsRecreating = true;
-		}
+			size_t retryCount = 0;
+			while (result == vk::Result::eSuboptimalKHR || result == vk::Result::eErrorOutOfDateKHR)
+			{
+				if (retryCount++ >= 3)
+					Log<LogLevel::Critical>("VulkanContext::FinishRender: Failed to present image after 3 retries.");
 
-		renderPassDatas.clear();
+				RecreateSwapchain();
+
+				result = VulkanCore::GetConstInstance().GetPresentQueue().presentKHR(
+					vk::PresentInfoKHR()
+					.setSwapchains(vkCore.GetSwapchain())
+					.setSwapchainCount(1)
+					.setPImageIndices(&indices)
+				);
+			}
+		}
 	}
 
 	void VulkanContext::SwapPresentImage()
 	{
-		vk::Result result = VulkanCore::GetInstance().IncrementCurrentFrameIndex();
+		auto& vkCore = VulkanCore::GetInstance();
+		vkCore.SetNextImageAvailableSemaphore();
+		vk::Result result = vkCore.IncrementCurrentFrameIndex();
+		(void)result;
 		size_t retryCount = 0;
 
-		while (result != vk::Result::eSuccess)
+		while (result == vk::Result::eSuboptimalKHR || result == vk::Result::eErrorOutOfDateKHR)
 		{
 			if (retryCount++ >= 3)
 				Log<LogLevel::Critical>("VulkanContext::SwapPresentImage: Failed to acquire next image after 3 retries.");
 
 			RecreateSwapchain();
-			result = VulkanCore::GetInstance().IncrementCurrentFrameIndex();
-			m_RenderPassNeedsRecreating = true;
+			result = vkCore.IncrementCurrentFrameIndex();
 		}
+		vkCore.GetRenderPassDatas().first.get().clear();
 	}
 
 #ifndef DIST
@@ -638,6 +645,9 @@ namespace OWC::Graphics
 
 	void VulkanContext::CreateSwapchain()
 	{
+		if (m_IsMinimized)
+			return;
+
 		vk::PhysicalDeviceSurfaceInfo2KHR surfaceInfo{};
 		std::vector<vk::SurfaceFormatKHR> surfaceFormats = VulkanCore::GetConstInstance().GetPhysicalDev().getSurfaceFormatsKHR(VulkanCore::GetConstInstance().GetSurface());
 		if (surfaceFormats.empty())
@@ -650,7 +660,20 @@ namespace OWC::Graphics
 		Log<LogLevel::Debug>(" Format: {}", vk::to_string(VulkanCore::GetConstInstance().GetSwapchainImageFormat()));
 		Log<LogLevel::Debug>(" Color Space: {}", vk::to_string(colorSpace));
 
-		vk::SurfaceCapabilities2KHR surfaceCapabilities = VulkanCore::GetConstInstance().GetPhysicalDev().getSurfaceCapabilities2KHR(VulkanCore::GetConstInstance().GetSurface());
+		vk::SurfaceCapabilities2KHR surfaceCapabilities{};
+		try
+		{
+			surfaceCapabilities = VulkanCore::GetConstInstance().GetPhysicalDev().getSurfaceCapabilities2KHR(VulkanCore::GetConstInstance().GetSurface());
+		}
+		catch (const vk::NativeWindowInUseKHRError& err)
+		{
+			Log<LogLevel::Critical>("Failed to get surface capabilities for the swapchain: {}", err.what());
+		}
+		catch (const vk::SystemError& err)
+		{
+			Log<LogLevel::Critical>("Failed to get surface capabilities for the swapchain: {}", err.what());
+		}
+
 		if (surfaceCapabilities.surfaceCapabilities.currentExtent.width == 0 || surfaceCapabilities.surfaceCapabilities.currentExtent.height == 0)
 			Log<LogLevel::Critical>("Failed to get valid surface extents for the swapchain");
 
@@ -741,7 +764,15 @@ namespace OWC::Graphics
 		Log<LogLevel::NewLine>();
 	}
 
-	void VulkanContext::CreateFramebuffers(uint32_t width, uint32_t height)
+	void VulkanContext::CreateFramebuffers(SDL_Window& windowHandle)
+	{
+		int width = 0;
+		int height = 0;
+		SDL_GetWindowSize(&windowHandle, &width, &height);
+		CreateFramebuffers(width, height);
+	}
+
+	void VulkanContext::CreateFramebuffers(int width, int height)
 	{
 		std::vector<vk::Framebuffer>& swapchainFramebuffers = VulkanCore::GetInstance().GetSwapchainFramebuffers();
 		swapchainFramebuffers.reserve(VulkanCore::GetConstInstance().GetSwapchainImageViews().size());
@@ -749,14 +780,13 @@ namespace OWC::Graphics
 		for (const auto& imageView : VulkanCore::GetConstInstance().GetSwapchainImageViews())
 			swapchainFramebuffers.emplace_back(VulkanCore::GetConstInstance().GetDevice().createFramebuffer(
 				vk::FramebufferCreateInfo()
-					.setRenderPass(VulkanCore::GetConstInstance().GetRenderPass())
-					.setAttachmentCount(1)
-					.setPAttachments(&imageView)
-					.setWidth(width)
-					.setHeight(height)
-					.setLayers(1)
-				)
-			);
+				.setRenderPass(VulkanCore::GetConstInstance().GetRenderPass())
+				.setAttachmentCount(1)
+				.setPAttachments(&imageView)
+				.setWidth(width)
+				.setHeight(height)
+				.setLayers(1)
+			));
 	}
 
 	void VulkanContext::CreateRenderPass()
@@ -836,6 +866,11 @@ namespace OWC::Graphics
 	void VulkanContext::RecreateSwapchain()
 	{
 		const auto& app = Application::GetConstInstance();
+		RecreateSwapchain(app.GetWindowWidth(), app.GetWindowHeight());
+	}
+
+	void VulkanContext::RecreateSwapchain(int width, int height)
+	{
 		auto& vkCore = VulkanCore::GetInstance();
 		WaitForIdle();
 		DestroySwapchain();
@@ -843,6 +878,30 @@ namespace OWC::Graphics
 		vkCore.GetSwapchainImageViews().clear();
 		vkCore.GetSwapchainFramebuffers().clear();
 		CreateSwapchain();
+		CreateFramebuffers(width, height);
+		m_RenderPassNeedsRecreating = true;
+	}
+
+	void VulkanContext::Minimize()
+	{
+		auto& vkCore = VulkanCore::GetInstance();
+		WaitForIdle();
+		DestroySwapchain();
+		vkCore.GetSwapchainImages().clear();
+		vkCore.GetSwapchainImageViews().clear();
+		vkCore.GetSwapchainFramebuffers().clear();
+		m_IsMinimized = true;
+	}
+
+	void VulkanContext::Restore()
+	{
+		if (!m_IsMinimized)
+			return;
+
+		const auto& app = Application::GetConstInstance();
+		m_IsMinimized = false;
+		CreateSwapchain();
 		CreateFramebuffers(app.GetWindowWidth(), app.GetWindowHeight());
+		m_RenderPassNeedsRecreating = true;
 	}
 }

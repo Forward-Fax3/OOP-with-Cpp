@@ -19,7 +19,7 @@ namespace OWC::Graphics
 		VulkanRenderPass(VulkanRenderPass&&) = delete;
 		VulkanRenderPass& operator=(VulkanRenderPass&&) = delete;
 
-		const vk::Fence GetFence() const { return m_Fence; }
+		vk::Fence GetFence() const { return m_Fence; }
 
 	private:
 		void AddPipeline(const BaseShader& shader) override;
@@ -33,7 +33,7 @@ namespace OWC::Graphics
 		[[nodiscard]] vk::PipelineBindPoint GetPipelineBindPoint() const;
 
 	private:
-		std::vector<vk::CommandBuffer> m_CommandBuffers;
+		std::vector<vk::CommandBuffer> m_CommandBuffers = {};
 		vk::Fence m_Fence = vk::Fence();
 	};
 }
