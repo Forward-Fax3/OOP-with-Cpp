@@ -67,25 +67,7 @@ namespace OWC::Graphics
 		static VulkanCore& GetInstance() { return *s_Instance; }
 		static const VulkanCore& GetConstInstance() { return *s_Instance; }
 
-		static void Init()
-		{
-			if (!s_Instance)
-				s_Instance = std::make_unique<VulkanCore>(PRIVATE());
-			else
-			{
-				Log<LogLevel::Warn>("VulkanCore instance already exists!");
-				return;
-			}
-
-			const auto runtimeVersion = vk::enumerateInstanceVersion();
-			if (runtimeVersion < g_VulkanVersion)
-				Log<LogLevel::Critical>("Vulkan runtime version {}.{}.{} is lower than the required version {}.{}.{}",
-					VK_VERSION_MAJOR(runtimeVersion), VK_VERSION_MINOR(runtimeVersion), VK_VERSION_PATCH(runtimeVersion),
-					VK_VERSION_MAJOR(g_VulkanVersion), VK_VERSION_MINOR(g_VulkanVersion), VK_VERSION_PATCH(g_VulkanVersion));
-			else
-				Log<LogLevel::Trace>("Vulkan runtime version {}.{}.{} detected",
-					VK_VERSION_MAJOR(runtimeVersion), VK_VERSION_MINOR(runtimeVersion), VK_VERSION_PATCH(runtimeVersion));
-		}
+		static void Init();
 
 		static void Shutdown() { s_Instance.reset(); }
 
@@ -124,7 +106,6 @@ namespace OWC::Graphics
 
 		[[nodiscard]] inline std::vector<vk::Image>& GetSwapchainImages() { return m_SwapchainImages; }
 		[[nodiscard]] inline std::vector<vk::ImageView>& GetSwapchainImageViews() { return m_SwapchainImageViews; }
-		[[nodiscard]] inline size_t& GetCurrentFrameIndex() { return m_CurrentFrameIndex; }
 		[[nodiscard]] inline std::pair<std::reference_wrapper<std::vector<std::shared_ptr<VulkanRenderPass>>>, std::unique_lock<std::mutex>> GetRenderPassDatas() { return { std::ref(m_RenderPassDatas), std::unique_lock(m_RenderPassesMutex) }; }
 
 		inline void SetInstance(const vk::Instance& instance) { m_Instance = instance; }
@@ -146,29 +127,13 @@ namespace OWC::Graphics
 		inline void SetSwapchain(const vk::SwapchainKHR& swapchain) { m_Swapchain = swapchain; }
 		inline void SetSwapchainImages(const std::vector<vk::Image>& swapchainImages) { m_SwapchainImages = swapchainImages; }
 		inline void SetSwapchainImageViews(const std::vector<vk::ImageView>& swapchainImageViews) { m_SwapchainImageViews = swapchainImageViews; }
+		inline void SetCurrentFrameIndex(size_t newIndex) { m_CurrentFrameIndex = newIndex; }
 
 		inline void SetupSemaphores()
 		{
 			m_Semaphores.reserve(m_SwapchainImageViews.size());
 			for (size_t i = 0; i < m_SwapchainImageViews.size(); i++)
 				m_Semaphores.emplace_back(std::map<std::string, vk::Semaphore>());
-		}
-
-		[[nodiscard]] inline std::pair<vk::Result, vk::Semaphore> IncrementCurrentFrameIndex()
-		{
-			std::array<std::string_view, 1> imageAcquiredName = { "ImageAcquired" };
-			auto imageAcquired = GetSemaphoresFromNames(imageAcquiredName)[0];
-
-			auto result = m_Device.acquireNextImage2KHR(vk::AcquireNextImageInfoKHR()
-				.setSwapchain(m_Swapchain)
-				.setSemaphore(imageAcquired)
-				.setTimeout(16'666)
-				.setDeviceMask(1)
-			);
-
-			m_CurrentFrameIndex = result.value;
-
-			return { result.result, imageAcquired };
 		}
 
 		inline void DestroySemaphores()

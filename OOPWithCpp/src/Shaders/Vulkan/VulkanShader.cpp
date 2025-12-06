@@ -6,7 +6,7 @@
 
 namespace OWC::Graphics
 {
-	VulkanShader::VulkanShader(const std::vector<ShaderData>& shaderDatas)
+	VulkanShader::VulkanShader(const std::span<ShaderData>& shaderDatas)
 	{
 		if (shaderDatas.empty())
 			Log<LogLevel::Error>("VulkanShader::VulkanShader: No shader data provided!");
@@ -39,7 +39,7 @@ namespace OWC::Graphics
 			VulkanCore::GetInstance().GetDevice().destroyShaderModule(shaderModule);
 	}
 
-	void VulkanShader::CreateVulkanPipeline(const std::vector<VulkanShaderData>& vulkanShaderDatas)
+	void VulkanShader::CreateVulkanPipeline(const std::span<VulkanShaderData>& vulkanShaderDatas)
 	{
 		Log<LogLevel::Trace>("VulkanShader::CreateVulkanPipeline: Creating Vulkan pipeline with {} shader stages.", vulkanShaderDatas.size());
 

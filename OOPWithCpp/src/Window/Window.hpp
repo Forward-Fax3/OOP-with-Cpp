@@ -27,8 +27,6 @@ namespace OWC
 
 		inline void SetEventCallback(const std::function<void(BaseEvent&)>& callback) { m_WindowEvent.SetCallback(callback); }
 
-		bool Resize(int width, int height);
-
 		Graphics::GraphicsContext& GetGraphicsContext() const { return *m_GraphicsContext; }
 		std::weak_ptr<Graphics::GraphicsContext> GetGraphicsContextPtr() const { return m_GraphicsContext; }
 
@@ -37,6 +35,7 @@ namespace OWC
 
 		bool IsWindowMinimized() const { return m_IsMinimized; }
 
+		void Resize(int width, int height);
 		void Minimize();
 		void Restore();
 

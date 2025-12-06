@@ -75,17 +75,18 @@ namespace OWC
 			});
 
 		dispacher.Dispatch<WindowResize>([](const WindowResize& e) {
-			return s_Instance->m_Window->Resize(e.GetWidth(), e.GetHeight());
+			s_Instance->m_Window->Resize(e.GetWidth(), e.GetHeight());
+			return false;
 			});
 
 		dispacher.Dispatch<WindowMinimize>([](const WindowMinimize&) {
 			s_Instance->m_Window->Minimize();
-			return false; // layers may need to use the event as well
+			return false;
 			});
 
 		dispacher.Dispatch<WindowRestore>([](const WindowRestore&) {
 			s_Instance->m_Window->Restore();
-			return false; // layers may need to use the event as well
+			return false;
 			});
 
 		if (event.HasBeenHandled())

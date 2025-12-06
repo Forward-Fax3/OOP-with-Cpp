@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <span>
 
 #include <vulkan/vulkan.hpp>
 
@@ -20,7 +21,7 @@ namespace OWC::Graphics
 		};
 
 	public:
-		explicit VulkanShader(const std::vector<ShaderData>& shaderDatas);
+		explicit VulkanShader(const std::span<ShaderData>& shaderDatas);
 		~VulkanShader() override;
 		VulkanShader(VulkanShader&) = default;
 		VulkanShader& operator=(VulkanShader&) = default;
@@ -30,7 +31,7 @@ namespace OWC::Graphics
 		[[nodiscard]] vk::Pipeline GetPipeline() const { return m_Pipeline; }
 
 	private:
-		void CreateVulkanPipeline(const std::vector<VulkanShaderData>& vulkanShaderDatas);
+		void CreateVulkanPipeline(const std::span<VulkanShaderData>& vulkanShaderDatas);
 
 		[[nodiscard]] static VulkanShaderData ProcessShaderData(const ShaderData& shaderData);
 		[[nodiscard]] static vk::ShaderStageFlagBits ConvertToVulkanShaderStage(ShaderData::ShaderType type);

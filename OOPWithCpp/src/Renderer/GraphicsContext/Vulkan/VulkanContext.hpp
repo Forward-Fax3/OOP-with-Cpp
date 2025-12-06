@@ -48,7 +48,7 @@ namespace OWC::Graphics
 
 		void Minimize() override;
 		void Restore() override;
-		void Resize() override { RecreateSwapchain(); WriteCommandBuffers(); }
+		void Resize() override { RecreateSwapchain(); RewriteCommandBuffers(); }
 
 		void ImGuiInit() override;
 		void ImGuiShutdown() override;
@@ -73,6 +73,7 @@ namespace OWC::Graphics
 		void DestroySwapchain();
 
 		void RecreateSwapchain();
+		void RewriteCommandBuffers();
 
 	private:
 #ifndef DIST

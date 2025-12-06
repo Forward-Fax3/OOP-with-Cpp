@@ -46,7 +46,7 @@ namespace OWC
 #endif
 	}
 
-	bool Window::Resize(int width, int height)
+	void Window::Resize(int width, int height)
 	{
 		if (m_Window)
 		{
@@ -58,7 +58,6 @@ namespace OWC
 		}
 		// always return false so that layers can handle the resize event if needed
 		m_GraphicsContext->Resize();
-		return false;
 	}
 
 	void Window::Minimize()

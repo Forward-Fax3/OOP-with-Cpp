@@ -14,8 +14,6 @@ namespace OWC::Graphics
 	{
 		const VulkanCore& vkCore = VulkanCore::GetConstInstance();
 
-//		vk::ClearValue clearColour(vk::ClearColorValue(std::array<float, 4>{0.0, 0.0, 0.0, 1.0}));
-
 		vk::Rect2D rect(
 			vk::Offset2D(0, 0),
 			{
@@ -31,20 +29,6 @@ namespace OWC::Graphics
 				vk::CommandBuffer cmdbuf = m_CommandBuffers[i];
 				cmdbuf.begin(vk::CommandBufferBeginInfo());
 
-				cmdbuf.pipelineBarrier2(vk::DependencyInfo()
-					.setImageMemoryBarrierCount(1)
-					.setImageMemoryBarriers(vk::ImageMemoryBarrier2()
-						.setImage(vkCore.GetSwapchainImages()[i])
-						.setOldLayout(vk::ImageLayout::eColorAttachmentOptimal)
-						.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal)
-						.setSrcAccessMask(vk::AccessFlagBits2::eColorAttachmentWrite)
-						.setDstAccessMask(vk::AccessFlagBits2::eColorAttachmentWrite)
-						.setSrcStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-						.setDstStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-						.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
-					)
-				);
-
 				cmdbuf.beginRendering(vk::RenderingInfo()
 					.setRenderArea(rect)
 					.setLayerCount(1)
@@ -54,11 +38,13 @@ namespace OWC::Graphics
 						.setImageLayout(vk::ImageLayout::eColorAttachmentOptimal)
 						.setLoadOp(vk::AttachmentLoadOp::eLoad)
 						.setStoreOp(vk::AttachmentStoreOp::eStore)
-//						.setClearValue(clearColour)
 					)
 				);
 
-				cmdbuf.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(Application::GetConstInstance().GetWindowWidth()), static_cast<float>(Application::GetConstInstance().GetWindowHeight()), 0.0f, 1.0f));
+				cmdbuf.setViewport(0, vk::Viewport(0.0f, 0.0f,
+					static_cast<float>(Application::GetConstInstance().GetWindowWidth()),
+					static_cast<float>(Application::GetConstInstance().GetWindowHeight()),
+					0.0f, 1.0f));
 				cmdbuf.setScissor(0, rect);
 			}
 		}
@@ -97,20 +83,6 @@ namespace OWC::Graphics
 			});
 
 		cmdbuf.begin(vk::CommandBufferBeginInfo().setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-
-		cmdbuf.pipelineBarrier2(vk::DependencyInfo()
-			.setImageMemoryBarrierCount(1)
-			.setImageMemoryBarriers(vk::ImageMemoryBarrier2()
-				.setImage(vkCore.GetSwapchainImages()[frameIndex])
-				.setOldLayout(vk::ImageLayout::eColorAttachmentOptimal)
-				.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal)
-				.setSrcAccessMask(vk::AccessFlagBits2::eColorAttachmentWrite)
-				.setDstAccessMask(vk::AccessFlagBits2::eColorAttachmentWrite)
-				.setSrcStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-				.setDstStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-				.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
-			)
-		);
 
 		cmdbuf.beginRendering(vk::RenderingInfo()
 			.setRenderArea(rect)
@@ -160,20 +132,6 @@ namespace OWC::Graphics
 			{
 				vk::CommandBuffer& cmdBuf = m_CommandBuffers[i];
 				cmdBuf.endRendering();
-				cmdBuf.pipelineBarrier2(vk::DependencyInfo()
-					.setImageMemoryBarriers(vk::ImageMemoryBarrier2()
-						.setImage(VulkanCore::GetConstInstance().GetSwapchainImages()[i])
-						.setOldLayout(vk::ImageLayout::eColorAttachmentOptimal)
-						.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal)
-						.setSrcAccessMask(vk::AccessFlagBits2::eColorAttachmentWrite)
-						.setDstAccessMask(vk::AccessFlagBits2::eColorAttachmentWrite)
-						.setSrcStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-						.setDstStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-						.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-						.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-						.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
-					)
-				);
 				cmdBuf.end();
 			}
 		else
@@ -182,20 +140,6 @@ namespace OWC::Graphics
 			const size_t i = vkCore.GetCurrentFrameIndex();
 			vk::CommandBuffer& cmdBuf = m_CommandBuffers[i];
 			cmdBuf.endRendering();
-			cmdBuf.pipelineBarrier2(vk::DependencyInfo()
-				.setImageMemoryBarriers(vk::ImageMemoryBarrier2()
-					.setImage(VulkanCore::GetConstInstance().GetSwapchainImages()[i])
-					.setOldLayout(vk::ImageLayout::eColorAttachmentOptimal)
-					.setNewLayout(vk::ImageLayout::eColorAttachmentOptimal)
-					.setSrcAccessMask(vk::AccessFlagBits2::eColorAttachmentWrite)
-					.setDstAccessMask(vk::AccessFlagBits2::eColorAttachmentWrite)
-					.setSrcStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-					.setDstStageMask(vk::PipelineStageFlagBits2::eColorAttachmentOutput)
-					.setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-					.setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
-					.setSubresourceRange(vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1))
-				)
-			);
 			cmdBuf.end();
 		}
 

@@ -6,6 +6,7 @@
 #include "BaseEvent.hpp"
 #include "WindowMinimizeEvent.hpp"
 #include "WindowRestoreEvent.hpp"
+#include "WindowResize.hpp"
 
 #include <array>
 
@@ -14,31 +15,13 @@ namespace OWC
 {
 	TestLayer::TestLayer()
 	{
-		using namespace OWC::Graphics;
-
-		std::vector<ShaderData> shaderDatas = {
-			{
-				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/test.vert.spv"),
-				.type = ShaderData::ShaderType::Vertex,
-				.language = ShaderData::ShaderLanguage::SPIRV
-			},
-			{
-				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/test.frag.spv"),
-				.type = ShaderData::ShaderType::Fragment,
-				.language = ShaderData::ShaderLanguage::SPIRV
-			}
-		};
-
-		m_Shader = BaseShader::CreateShader(shaderDatas);
-
-		setupRenderPass();
+		SetupPipeline();
+		SetupRenderPass();
 	}
 
 	void TestLayer::OnUpdate()
 	{
 		using namespace OWC::Graphics;
-		if (Application::GetConstInstance().GetWindow().GetGraphicsContext().RenderPassNeedsRecreating())
-			setupRenderPass();
 
 		std::array<std::string_view, 1> waitSemaphorenames = { "ImageReady" };
 		std::array<std::string_view, 1> signalSemaphoreNames = { "TestLayer" };
@@ -56,6 +39,7 @@ namespace OWC
 		EventDispatcher dispatcher(e);
 
 		dispatcher.Dispatch<WindowRestore>([this](const WindowRestore& /*event*/) {
+			this->SetupRenderPass();
 			this->SetActive(true);
 			return false;
 			});
@@ -67,14 +51,40 @@ namespace OWC
 			this->SetActive(false);
 			return false;
 			});
+
+		dispatcher.Dispatch<WindowResize>([this](const WindowResize& /*event*/) {
+			this->SetupPipeline();
+			this->SetupRenderPass();
+			return false;
+			});
 	}
 
-	void TestLayer::setupRenderPass()
+	void TestLayer::SetupRenderPass()
 	{
 		using namespace OWC::Graphics;
 		m_renderPass = Renderer::BeginPass();
 		Renderer::PipelineBind(m_renderPass, *m_Shader);
 		Renderer::Draw(m_renderPass, 6);
 		Renderer::EndPass(m_renderPass);
+	}
+
+	void TestLayer::SetupPipeline()
+	{
+		using namespace OWC::Graphics;
+
+		std::vector<ShaderData> shaderDatas = {
+			{
+				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/test.vert.spv"),
+				.type = ShaderData::ShaderType::Vertex,
+				.language = ShaderData::ShaderLanguage::SPIRV
+			},
+			{
+				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/test.frag.spv"),
+				.type = ShaderData::ShaderType::Fragment,
+				.language = ShaderData::ShaderLanguage::SPIRV
+			}
+		};
+
+		m_Shader = BaseShader::CreateShader(shaderDatas);
 	}
 }

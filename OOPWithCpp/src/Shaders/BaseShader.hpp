@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <string>
 #include <vector>
+#include <span>
 #include <memory>
 
 
@@ -17,9 +18,9 @@ namespace OWC::Graphics
 
 		enum class ShaderLanguage : uint8_t
 		{ // for now only SPIR-V is supported
-			GLSL,
-			HLSL,
-			Slang,
+//			GLSL,
+//			HLSL,
+//			Slang,
 			SPIRV,
 
 			SPV = SPIRV
@@ -58,6 +59,6 @@ namespace OWC::Graphics
 		BaseShader(BaseShader&&) noexcept = default;
 		BaseShader& operator=(BaseShader&&) noexcept = default;
 
-		static std::unique_ptr<BaseShader> CreateShader(const std::vector<ShaderData>& shaderDatas);
+		static std::unique_ptr<BaseShader> CreateShader(const std::span<ShaderData>& shaderDatas);
 	};
 }

@@ -6,7 +6,6 @@
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_to_string.hpp>
 #include <SDL3/SDL_vulkan.h>
-#define IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
 #include <backends/imgui_impl_vulkan.h>
 
 #include "Application.hpp"
@@ -318,7 +317,18 @@ namespace OWC::Graphics
 	void VulkanContext::SwapPresentImage()
 	{
 		auto& vkCore = VulkanCore::GetInstance();
-		const auto [_, imageAcquired] = vkCore.IncrementCurrentFrameIndex();
+
+		std::array<std::string_view, 1> imageAcquiredName = { "ImageAcquired" };
+		auto imageAcquired = vkCore.GetSemaphoresFromNames(imageAcquiredName)[0];
+
+		auto result = vkCore.GetDevice().acquireNextImage2KHR(vk::AcquireNextImageInfoKHR()
+			.setSwapchain(vkCore.GetSwapchain())
+			.setSemaphore(imageAcquired)
+			.setTimeout(16'666)
+			.setDeviceMask(1)
+		);
+
+		vkCore.SetCurrentFrameIndex(result.value);
 
 //		size_t retryCount = 0;
 //
@@ -884,7 +894,7 @@ namespace OWC::Graphics
 				)
 			);
 
-			cmdBuf.setViewport(0, vk::Viewport(0.0f, 0.0f, windowSizeExtent.width, windowSizeExtent.height));
+			cmdBuf.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(windowSizeExtent.width), static_cast<float>(windowSizeExtent.height)));
 			cmdBuf.setScissor(0, rect);
 			cmdBuf.endRendering();
 			cmdBuf.end();
@@ -937,6 +947,17 @@ namespace OWC::Graphics
 		m_RenderPassNeedsRecreating = true;
 	}
 
+	void VulkanContext::RewriteCommandBuffers()
+	{
+		auto& vkCore = VulkanCore::GetInstance();
+		WaitForIdle();
+
+		vkCore.GetDevice().freeCommandBuffers(vkCore.GetGraphicsCommandPool(), m_BeginRenderCmdBuf);
+		vkCore.GetDevice().freeCommandBuffers(vkCore.GetGraphicsCommandPool(), m_EndRenderCmdBuf);
+
+		WriteCommandBuffers();
+	}
+
 	void VulkanContext::AddRenderPassData(const std::shared_ptr<RenderPassData>& renderPassData)
 	{
 		VulkanCore::GetInstance().AddRenderPassData(renderPassData);
@@ -959,13 +980,13 @@ namespace OWC::Graphics
 
 		m_IsMinimized = false;
 		CreateSwapchain();
-		WriteCommandBuffers();
+		RewriteCommandBuffers();
 		m_RenderPassNeedsRecreating = true;
 	}
-
+	
 	void VulkanContext::ImGuiInit()
 	{
-		const auto& vsCore = VulkanCore::GetConstInstance();
+		const auto& vkCore = VulkanCore::GetConstInstance();
 
 		std::array<vk::DescriptorPoolSize, 1> poolSizes = {
 			vk::DescriptorPoolSize()
@@ -979,22 +1000,21 @@ namespace OWC::Graphics
 			.setPoolSizeCount(static_cast<uint32_t>(poolSizes.size()))
 			.setPPoolSizes(poolSizes.data());
 
-		VulkanCore::GetInstance().SetImGuiDescriptorPool(vsCore.GetDevice().createDescriptorPool(poolInfo));
+		VulkanCore::GetInstance().SetImGuiDescriptorPool(vkCore.GetDevice().createDescriptorPool(poolInfo));
 
 		ImGui_ImplVulkan_InitInfo init_info = {};
 		init_info.ApiVersion = g_VulkanVersion;
-		init_info.Instance = vsCore.GetVKInstance();
-		init_info.PhysicalDevice = vsCore.GetPhysicalDev();
-		init_info.Device = vsCore.GetDevice();
+		init_info.Instance = vkCore.GetVKInstance();
+		init_info.PhysicalDevice = vkCore.GetPhysicalDev();
+		init_info.Device = vkCore.GetDevice();
 		init_info.QueueFamily = m_QueueFamilyIndices.GraphicsFamily;
-		init_info.Queue = vsCore.GetGraphicsQueue();
+		init_info.Queue = vkCore.GetGraphicsQueue();
 		init_info.PipelineCache = nullptr;
-		init_info.DescriptorPool = vsCore.GetImGuiDescriptorPool();
+		init_info.DescriptorPool = vkCore.GetImGuiDescriptorPool();
 		init_info.UseDynamicRendering = true;
 		init_info.MinAllocationSize = 1024 * 1024;
-//		init_info.MinImageCount = static_cast<uint32_t>(VulkanCore::GetConstInstance().GetSwapchainImages().size());
-		init_info.MinImageCount = 2;
-		init_info.ImageCount = static_cast<uint32_t>(vsCore.GetSwapchainImages().size());
+		init_info.MinImageCount = static_cast<uint32_t>(vkCore.GetSwapchainImages().size());
+		init_info.ImageCount = static_cast<uint32_t>(vkCore.GetSwapchainImages().size());
 		init_info.Allocator = nullptr;
 		init_info.CheckVkResultFn = [](VkResult err)
 		{
@@ -1004,7 +1024,7 @@ namespace OWC::Graphics
 
 		vk::PipelineRenderingCreateInfo pipelineInfo = vk::PipelineRenderingCreateInfo()
 			.setColorAttachmentCount(1)
-			.setColorAttachmentFormats(vsCore.GetSwapchainImageFormat())
+			.setColorAttachmentFormats(vkCore.GetSwapchainImageFormat())
 			.setDepthAttachmentFormat(vk::Format::eUndefined)
 			.setStencilAttachmentFormat(vk::Format::eUndefined);
 
