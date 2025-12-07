@@ -5,3 +5,6 @@
 	path = OOPWithCpp/3rdParty/Projects/git/ImGui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "OOPWithCpp/3rdParty/HeaderOnly/git/stbImage"]
+	path = OOPWithCpp/3rdParty/HeaderOnly/git/stbImage
+	url = https://github.com/nothings/stb.git

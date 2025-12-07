@@ -13,9 +13,9 @@ newoption
 IncludeDir = {}
 IncludeDir["SDL"] = "OOPWithCpp/3rdParty/Projects/git/SDL/include"
 IncludeDir["ImGui"] = "OOPWithCpp/3rdParty/Projects/git/ImGui"
+IncludeDir["stb"]  = "OOPWithCpp/3rdParty/HeaderOnly/git/stbImage/"
 -- IncludeDir["glm"]  = "RTIAW/3rd Party/Git/glm/"
 -- IncludeDir["CTPL"] = "RTIAW/3rd Party/Git/CTPL/"
--- IncludeDir["stb"]  = "RTIAW/3rd Party/Git/stb/"
 
 workspace "OOPWithCpp"
 	architecture "x86_64"
@@ -184,9 +184,9 @@ project "OOPWithCppSSE4_2"
 		
 		"%{IncludeDir.SDL}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.stb}",
 --		"%{IncludeDir.glm}",
 --		"%{IncludeDir.CTPL}",
---		"%{IncludeDir.stb}",
 
 		"%VULKAN_SDK%/Include"
 	}
@@ -253,9 +253,9 @@ project "OOPWithCppAVX2"
 		
 		"%{IncludeDir.SDL}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.stb}",
 --		"%{IncludeDir.glm}",
 --		"%{IncludeDir.CTPL}",
---		"%{IncludeDir.stb}",
 
 		"%VULKAN_SDK%/Include"
 	}
@@ -311,9 +311,9 @@ project "OOPWithCppAVX512"
 		
 		"%{IncludeDir.SDL}",
 		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.stb}",
 --		"%{IncludeDir.glm}",
 --		"%{IncludeDir.CTPL}",
---		"%{IncludeDir.stb}",
 
 		"%VULKAN_SDK%/Include"
 	}
