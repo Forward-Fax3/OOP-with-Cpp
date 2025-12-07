@@ -8,3 +8,6 @@
 [submodule "OOPWithCpp/3rdParty/HeaderOnly/git/stbImage"]
 	path = OOPWithCpp/3rdParty/HeaderOnly/git/stbImage
 	url = https://github.com/nothings/stb.git
+[submodule "OOPWithCpp/3rdParty/HeaderOnly/git/GLM"]
+	path = OOPWithCpp/3rdParty/HeaderOnly/git/GLM
+	url = https://github.com/g-truc/glm.git
