@@ -30,7 +30,7 @@ namespace OWC
 	Window::~Window()
 	{
 		m_GraphicsContext.reset();
-		SDL_DestroyWindow(m_Window.release());
+		m_Window.reset();
 		SDL_Quit();
 	}
 

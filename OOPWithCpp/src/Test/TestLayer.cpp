@@ -10,11 +10,15 @@
 
 #include <array>
 
+#include <glm/gtc/type_ptr.hpp>
+
 
 namespace OWC
 {
 	TestLayer::TestLayer()
 	{
+//		m_Image = Renderer::LoadImage();
+		m_UniformBuffer = Graphics::UniformBuffer::CreateUniformBuffer(sizeof(glm::vec4)); // example size for a float4
 		SetupPipeline();
 		SetupRenderPass();
 	}
@@ -26,12 +30,16 @@ namespace OWC
 		std::array<std::string_view, 1> waitSemaphorenames = { "ImageReady" };
 		std::array<std::string_view, 1> signalSemaphoreNames = { "TestLayer" };
 
+		m_UniformBuffer->UpdateBufferData(std::as_bytes(std::span<const glm::vec4>(&m_Colour, 1)));
 		Renderer::RestartRenderPass(m_renderPass);
 		Renderer::SubmitRenderPass(m_renderPass, waitSemaphorenames, signalSemaphoreNames);
 	}
 
 	void TestLayer::ImGuiRender()
-	{ // not needed
+	{ 
+		ImGui::Begin("Test Layer");
+		ImGui::ColorEdit4("Colour", glm::value_ptr(m_Colour));
+		ImGui::End();
 	}
 
 	void TestLayer::OnEvent(class BaseEvent& e)
@@ -64,6 +72,7 @@ namespace OWC
 		using namespace OWC::Graphics;
 		m_renderPass = Renderer::BeginPass();
 		Renderer::PipelineBind(m_renderPass, *m_Shader);
+		Renderer::BindUniform(m_renderPass, *m_Shader, m_UniformBuffer);
 		Renderer::Draw(m_renderPass, 6);
 		Renderer::EndPass(m_renderPass);
 	}
@@ -72,16 +81,42 @@ namespace OWC
 	{
 		using namespace OWC::Graphics;
 
+//		std::vector<BindingDiscription> fragmentBindingDiscriptions = {
+//			{
+//				.descriptorCount = 1,
+//				.binding = 0,
+//				.descriptorType = DescriptorType::UniformBuffer,
+//				.stageFlags = ShaderType::Fragment
+//			},
+//			{
+//				.descriptorCount = 1,
+//				.binding = 1,
+//				.descriptorType = DescriptorType::CombinedImageSampler,
+//				.stageFlags = ShaderType::Fragment
+//			}
+//		};
+
+		std::vector<BindingDiscription> fragmentBindingDiscriptions = {
+			{
+				.descriptorCount = 1,
+				.binding = 0,
+				.descriptorType = DescriptorType::UniformBuffer,
+				.stageFlags = ShaderType::Fragment
+			}
+		};
+
 		std::vector<ShaderData> shaderDatas = {
 			{
 				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/test.vert.spv"),
-				.type = ShaderData::ShaderType::Vertex,
-				.language = ShaderData::ShaderLanguage::SPIRV
+				.type = ShaderType::Vertex,
+				.language = ShaderData::ShaderLanguage::SPIRV,
+				.descriptorType = {}
 			},
 			{
-				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/test.frag.spv"),
-				.type = ShaderData::ShaderType::Fragment,
-				.language = ShaderData::ShaderLanguage::SPIRV
+				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/testImage.frag.spv"),
+				.type = ShaderType::Fragment,
+				.language = ShaderData::ShaderLanguage::SPIRV,
+				.descriptorType = fragmentBindingDiscriptions
 			}
 		};
 

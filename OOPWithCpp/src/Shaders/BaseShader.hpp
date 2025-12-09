@@ -7,15 +7,31 @@
 
 namespace OWC::Graphics
 {
+	enum class ShaderType : uint8_t
+	{
+		Vertex = 1<<0,
+		Fragment = 1<<1,
+		Compute = 1<<2
+	};
+
+	enum class DescriptorType : uint8_t
+	{
+		UniformBuffer,
+		Sampler,
+		CombinedImageSampler,
+		StorageBuffer
+	};
+
+	struct BindingDiscription
+	{
+		uint32_t descriptorCount;
+		uint32_t binding;
+		DescriptorType descriptorType;
+		ShaderType stageFlags;
+	};
+
 	struct ShaderData
 	{
-		enum class ShaderType : uint8_t
-		{
-			Vertex,
-			Fragment,
-			Compute
-		};
-
 		enum class ShaderLanguage : uint8_t
 		{ // for now only SPIR-V is supported
 //			GLSL,
@@ -30,7 +46,7 @@ namespace OWC::Graphics
 		{
 			switch (type)
 			{
-			using enum OWC::Graphics::ShaderData::ShaderType;
+			using enum OWC::Graphics::ShaderType;
 			case Vertex:
 				return "Vertex";
 			case Fragment:
@@ -47,6 +63,7 @@ namespace OWC::Graphics
 		
 		ShaderType type;
 		ShaderLanguage language;
+		std::span<BindingDiscription> descriptorType;
 	};
 
 	class BaseShader

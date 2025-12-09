@@ -17,11 +17,8 @@ namespace OWC::Graphics
 		for (const auto& shaderData : shaderDatas)
 		{
 			if (shaderData.language != ShaderData::ShaderLanguage::SPIRV)
-			{
 				Log<LogLevel::Error>("VulkanShader::VulkanShader: Unsupported shader language for Vulkan shader: {}!", std::to_underlying(shaderData.language));
-			}
-			// Here we would normally process the SPIR-V bytecode and create Vulkan shader modules.
-			// For now, we just log the shader type being processed.
+
 			Log<LogLevel::Debug>("VulkanShader::VulkanShader: Processing {} shader.", shaderData.ShaderTypeToString());
 
 			vulkanShaderDatas.push_back(ProcessShaderData(shaderData));
@@ -32,6 +29,9 @@ namespace OWC::Graphics
 
 	VulkanShader::~VulkanShader()
 	{
+		VulkanCore::GetInstance().GetDevice().destroyDescriptorPool(m_DescriptorPool);
+		VulkanCore::GetInstance().GetDevice().destroyDescriptorSetLayout(m_DescriptorSetLayout);
+
 		VulkanCore::GetInstance().GetDevice().destroyPipeline(m_Pipeline);
 		VulkanCore::GetInstance().GetDevice().destroyPipelineLayout(m_PipelineLayout);
 
@@ -41,11 +41,14 @@ namespace OWC::Graphics
 
 	void VulkanShader::CreateVulkanPipeline(const std::span<VulkanShaderData>& vulkanShaderDatas)
 	{
+		// Create shader modules and pipeline
+
 		Log<LogLevel::Trace>("VulkanShader::CreateVulkanPipeline: Creating Vulkan pipeline with {} shader stages.", vulkanShaderDatas.size());
+		const auto& device = VulkanCore::GetConstInstance().GetDevice();
 
 		std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
-		shaderStages.reserve(vulkanShaderDatas.size());
 		m_ShaderModules.reserve(vulkanShaderDatas.size());
+		shaderStages.reserve(vulkanShaderDatas.size());
 
 		for (const auto& shaderData : vulkanShaderDatas)
 		{
@@ -53,14 +56,14 @@ namespace OWC::Graphics
 				.setCodeSize(shaderData.bytecode.size() * sizeof(uint32_t))
 				.setPCode(shaderData.bytecode.data());
 
-			m_ShaderModules.emplace_back(VulkanCore::GetInstance().GetDevice().createShaderModule(shaderModuleCreateInfo));
+			m_ShaderModules.emplace_back(device.createShaderModule(shaderModuleCreateInfo));
 
-			const vk::PipelineShaderStageCreateInfo shaderStageInfo = vk::PipelineShaderStageCreateInfo()
-				.setStage(shaderData.stage)
-				.setModule(m_ShaderModules.back())
-				.setPName(shaderData.entryPoint.c_str());
-
-			shaderStages.push_back(shaderStageInfo);
+			shaderStages.emplace_back(
+				static_cast<vk::PipelineShaderStageCreateFlags>(0),
+				shaderData.stage,
+				m_ShaderModules.back(),
+				shaderData.entryPoint.c_str()
+			);
 		}
 
 		constexpr std::array<vk::DynamicState, 2> dynamicStates = {
@@ -99,13 +102,8 @@ namespace OWC::Graphics
 			.setPScissors(&scissor);
 
 		constexpr vk::PipelineRasterizationStateCreateInfo rasterizer = vk::PipelineRasterizationStateCreateInfo()
-			.setDepthClampEnable(vk::False)
-			.setRasterizerDiscardEnable(vk::False)
 			.setPolygonMode(vk::PolygonMode::eFill)
-			.setLineWidth(1.0f)
-			.setCullMode(vk::CullModeFlagBits::eNone) // not needed for now
-//			.setFrontFace(vk::FrontFace::eClockwise)
-			.setDepthBiasEnable(vk::False);
+			.setLineWidth(1.0f);
 
 		constexpr vk::PipelineMultisampleStateCreateInfo multisampling = vk::PipelineMultisampleStateCreateInfo()
 			.setSampleShadingEnable(vk::False)
@@ -129,13 +127,30 @@ namespace OWC::Graphics
 			.setColorAttachmentCount(1)
 			.setPColorAttachmentFormats(&VulkanCore::GetConstInstance().GetSwapchainImageFormat());
 
-		vk::PipelineLayoutCreateInfo pipelineLayoutInfo{};
-		m_PipelineLayout = VulkanCore::GetInstance().GetDevice().createPipelineLayout(pipelineLayoutInfo);
+		std::vector<vk::DescriptorSetLayoutBinding> bindings;
+
+		for (const auto& shaderData : vulkanShaderDatas)
+			for (const auto& bindingDescription : shaderData.bindingDescriptions)
+				bindings.emplace_back(
+					bindingDescription.binding,
+					ConvertToVulkanDescriptorType(bindingDescription.descriptorType),
+					bindingDescription.descriptorCount,
+					ConvertToVulkanShaderStage(bindingDescription.stageFlags)
+				);
+
+		vk::DescriptorSetLayoutCreateInfo layoutInfo = vk::DescriptorSetLayoutCreateInfo()
+			.setBindings(bindings);
+
+		m_DescriptorSetLayout = device.createDescriptorSetLayout(layoutInfo);
+
+		vk::PipelineLayoutCreateInfo pipelineLayoutInfo = vk::PipelineLayoutCreateInfo()
+			.setSetLayouts(m_DescriptorSetLayout);
+
+		m_PipelineLayout = device.createPipelineLayout(pipelineLayoutInfo);
 
 		vk::GraphicsPipelineCreateInfo pipelineInfo = vk::GraphicsPipelineCreateInfo()
 			.setPNext(&pipelineRenderingInfo)
-			.setStageCount(static_cast<uint32_t>(shaderStages.size()))
-			.setPStages(shaderStages.data())
+			.setStages(shaderStages)
 			.setPVertexInputState(&vertexInputInfo)
 			.setPInputAssemblyState(&inputAssembly)
 			.setPViewportState(&viewportState)
@@ -144,10 +159,9 @@ namespace OWC::Graphics
 			.setPColorBlendState(&colorBlending)
 			.setPDynamicState(&dynamicStateCreateInfo)
 			.setLayout(m_PipelineLayout)
-//			.setRenderPass(VulkanCore::GetInstance().GetRenderPass())
 			.setSubpass(0);
 
-		auto result = VulkanCore::GetInstance().GetDevice().createGraphicsPipelines(
+		auto result = device.createGraphicsPipelines(
 			nullptr,
 			1,
 			&pipelineInfo,
@@ -157,6 +171,23 @@ namespace OWC::Graphics
 
 		if (result != vk::Result::eSuccess)
 			Log<LogLevel::Error>("VulkanShader::CreateVulkanPipeline: Failed to create Vulkan graphics pipeline!");
+
+		// build Descriptor Pool
+		// TODO: make this dynamic based on actual usage
+
+		vk::DescriptorPoolSize poolSize = vk::DescriptorPoolSize()
+			.setType(vk::DescriptorType::eUniformBuffer)  
+			.setDescriptorCount(10);
+
+		vk::DescriptorPoolCreateInfo poolInfo = vk::DescriptorPoolCreateInfo()
+			.setPoolSizes(poolSize)
+			.setMaxSets(10);
+
+		m_DescriptorPool = device.createDescriptorPool(poolInfo);
+		vk::DescriptorSetAllocateInfo allocInfo = vk::DescriptorSetAllocateInfo()
+			.setDescriptorPool(m_DescriptorPool)
+			.setSetLayouts(m_DescriptorSetLayout);
+		m_DescriptorSet = device.allocateDescriptorSets(allocInfo).front();
 	}
 
 	VulkanShader::VulkanShaderData VulkanShader::ProcessShaderData(const ShaderData& shaderData)
@@ -165,30 +196,47 @@ namespace OWC::Graphics
 
 		VulkanShaderData vulkanShaderData;
 
-		vulkanShaderData.entryPoint = "main"; // Example entry point naming
-		if (shaderData.language == ShaderData::ShaderLanguage::SPIRV)
-		{
+		vulkanShaderData.entryPoint = "main";
+		if (shaderData.language == ShaderData::ShaderLanguage::SPIRV) // will always be true for now as the check is done earlier
 			vulkanShaderData.bytecode = shaderData.bytecode;
-		}
+		// in the future, add support for other shader languages here (e.g., GLSL to SPIR-V compilation)
 		vulkanShaderData.stage = ConvertToVulkanShaderStage(shaderData.type);
+		vulkanShaderData.bindingDescriptions = std::vector<BindingDiscription>(shaderData.descriptorType.begin(), shaderData.descriptorType.end());
 		return vulkanShaderData;
 	}
 
-	vk::ShaderStageFlagBits VulkanShader::ConvertToVulkanShaderStage(ShaderData::ShaderType type)
+	vk::ShaderStageFlagBits VulkanShader::ConvertToVulkanShaderStage(ShaderType type)
+	{
+		vk::ShaderStageFlags stage;
+
+		if (type == ShaderType::Vertex)
+			stage |= vk::ShaderStageFlagBits::eVertex;
+		if (type == ShaderType::Fragment)
+			stage |= vk::ShaderStageFlagBits::eFragment;
+		if (type == ShaderType::Compute)
+			stage |= vk::ShaderStageFlagBits::eCompute;
+
+		if (stage == vk::ShaderStageFlags())
+			Log<LogLevel::Error>("VulkanShader::ConvertToVulkanShaderStage: Unknown shader type provided: {}!", std::to_underlying(type));
+
+		return static_cast<vk::ShaderStageFlagBits>(static_cast<uint32_t>(stage)); // don't ask
+	}
+
+	vk::DescriptorType VulkanShader::ConvertToVulkanDescriptorType(DescriptorType type)
 	{
 		switch (type)
 		{
-		using enum OWC::Graphics::ShaderData::ShaderType;
-		using enum vk::ShaderStageFlagBits;
-		case Vertex:
-			return eVertex;
-		case Fragment:
-			return eFragment;
-		case Compute:
-			return eCompute;
+		case DescriptorType::UniformBuffer:
+			return vk::DescriptorType::eUniformBuffer;
+		case DescriptorType::Sampler:
+			return vk::DescriptorType::eSampler;
+		case DescriptorType::CombinedImageSampler:
+			return vk::DescriptorType::eCombinedImageSampler;
+		case DescriptorType::StorageBuffer:
+			return vk::DescriptorType::eStorageBuffer;
 		default:
-			Log<LogLevel::Error>("VulkanShader::ConvertToVulkanShaderStage: Unknown shader type {}!", std::to_underlying(type));
-			return eVertex; // Default return to avoid compiler warning
+			Log<LogLevel::Error>("VulkanShader::ConvertToVulkanDescriptorType: Unknown descriptor type provided: {}!", std::to_underlying(type));
+			return static_cast<vk::DescriptorType>(0); // to silence compiler warning
 		}
 	}
 }

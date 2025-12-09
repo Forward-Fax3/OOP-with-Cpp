@@ -151,4 +151,16 @@ namespace OWC::Graphics
 
 		return semaphores;
 	}
+
+	uint32_t VulkanCore::FindMemoryType(vk::DeviceSize size, vk::MemoryPropertyFlags properties) const
+	{
+		(void)size; // Unused parameter
+		vk::PhysicalDeviceMemoryProperties memoryProperties = m_PhysicalDevice.getMemoryProperties();
+		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
+			if ((memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
+				return i;
+
+		Log<LogLevel::Critical>("Failed to find suitable memory type!");
+		std::unreachable();
+	}
 }

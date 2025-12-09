@@ -24,6 +24,7 @@ namespace OWC::Graphics
 	private:
 		void BeginDynamicPass() override;
 		void AddPipeline(const BaseShader& shader) override;
+		void BindUniform(const BaseShader& shader, const std::shared_ptr<UniformBuffer>& uniformBuffer) override;
 		void Draw(uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0) override;
 		void EndRenderPass() override;
 		void submitRenderPass(std::span<std::string_view> waitSemaphoreNames, std::span<std::string_view> startSemaphore) override;

@@ -2,8 +2,10 @@
 #include "Layer.hpp"
 #include "BaseShader.hpp"
 #include "Renderer.hpp"
+#include "UniformBuffer.hpp"
 
 #include <memory>
+#include <glm/glm.hpp>
 
 
 namespace OWC
@@ -29,5 +31,7 @@ namespace OWC
 	private:
 		std::unique_ptr<Graphics::BaseShader> m_Shader = nullptr;
 		std::shared_ptr<Graphics::RenderPassData> m_renderPass = nullptr;
+		std::shared_ptr<Graphics::UniformBuffer> m_UniformBuffer = nullptr;
+		glm::vec4 m_Colour = { 0.0, 0.0, 1.0, 1.0 };
 	};
 }

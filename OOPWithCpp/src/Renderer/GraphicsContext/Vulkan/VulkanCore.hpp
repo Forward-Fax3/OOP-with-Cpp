@@ -83,6 +83,8 @@ namespace OWC::Graphics
 
 		[[nodiscard]] std::vector<vk::Semaphore> GetSemaphoresFromNames(std::span<std::string_view> semaphoreNames);
 
+		[[nodiscard]] uint32_t FindMemoryType(vk::DeviceSize size, vk::MemoryPropertyFlags properties) const;
+
 		[[nodiscard]] inline const vk::Instance& GetVKInstance() const { return m_Instance; }
 		[[nodiscard]] inline const vk::SurfaceKHR& GetSurface() const { return m_Surface; }
 		[[nodiscard]] inline const vk::PhysicalDevice& GetPhysicalDev() const { return m_PhysicalDevice; }
@@ -103,6 +105,7 @@ namespace OWC::Graphics
 		[[nodiscard]] inline const std::vector<vk::Image>& GetSwapchainImages() const { return m_SwapchainImages; }
 		[[nodiscard]] inline const std::vector<vk::ImageView>& GetSwapchainImageViews() const { return m_SwapchainImageViews; }
 		[[nodiscard]] inline size_t GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
+		[[nodiscard]] inline size_t GetNumberOfFramesInFlight() const { return m_SwapchainImageViews.size(); }
 
 		[[nodiscard]] inline std::vector<vk::Image>& GetSwapchainImages() { return m_SwapchainImages; }
 		[[nodiscard]] inline std::vector<vk::ImageView>& GetSwapchainImageViews() { return m_SwapchainImageViews; }
@@ -167,13 +170,13 @@ namespace OWC::Graphics
 		vk::SwapchainKHR m_Swapchain = vk::SwapchainKHR();
 		vk::Format m_SwapchainImageFormat = vk::Format::eUndefined;
 		vk::DescriptorPool m_ImGuiDescriptorPool = vk::DescriptorPool();
-		std::vector<vk::Image> m_SwapchainImages = {};
-		std::vector<vk::ImageView> m_SwapchainImageViews = {};
+		std::vector<vk::Image> m_SwapchainImages{};
+		std::vector<vk::ImageView> m_SwapchainImageViews{};
 
-		std::vector<std::map<std::string, vk::Semaphore>> m_Semaphores = {};
+		std::vector<std::map<std::string, vk::Semaphore>> m_Semaphores{};
 		size_t m_CurrentFrameIndex = 0;
 
-		std::vector<std::shared_ptr<VulkanRenderPass>> m_RenderPassDatas = {};
+		std::vector<std::shared_ptr<VulkanRenderPass>> m_RenderPassDatas{};
 
 		std::mutex m_RenderPassesMutex;
 

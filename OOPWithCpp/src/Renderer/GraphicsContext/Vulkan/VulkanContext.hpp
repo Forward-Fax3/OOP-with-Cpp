@@ -81,8 +81,8 @@ namespace OWC::Graphics
 #endif
 		QueueFamilyIndices m_QueueFamilyIndices{};
 
-		std::vector<vk::CommandBuffer> m_BeginRenderCmdBuf;
-		std::vector<vk::CommandBuffer> m_EndRenderCmdBuf;
+		std::vector<vk::CommandBuffer> m_BeginRenderCmdBuf{};
+		std::vector<vk::CommandBuffer> m_EndRenderCmdBuf{};
 
 		bool m_RenderPassNeedsRecreating = false;
 		bool m_IsMinimized = false;

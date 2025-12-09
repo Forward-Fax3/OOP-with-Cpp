@@ -4,6 +4,7 @@
 #include "GraphicsContext.hpp"
 #endif
 #include "BaseShader.hpp"
+#include "UniformBuffer.hpp"
 
 #include <imgui.h>
 #include <span>
@@ -37,6 +38,7 @@ namespace OWC::Graphics
 	private:
 		void virtual BeginDynamicPass() = 0;
 		void virtual AddPipeline(const BaseShader& shader) = 0;
+		void virtual BindUniform(const BaseShader& shader, const std::shared_ptr<UniformBuffer>& uniformBuffer) = 0;
 		void virtual Draw(uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0) = 0;
 		void virtual EndRenderPass() = 0;
 		void virtual submitRenderPass(std::span<std::string_view> waitSemaphoreNames, std::span<std::string_view> startSemaphore) = 0;
@@ -71,6 +73,7 @@ namespace OWC::Graphics
 
 		static std::shared_ptr<RenderPassData> BeginPass();
 		static void PipelineBind(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader);
+		static void BindUniform(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader, const std::shared_ptr<UniformBuffer>& uniformBuffer);
 		static void Draw(const std::shared_ptr<RenderPassData>& data, uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t firstVertex = 0, uint32_t firstInstance = 0);
 		static void EndPass(const std::shared_ptr<RenderPassData>& data);
 		static void SubmitRenderPass(const std::shared_ptr<RenderPassData>& data, std::span<std::string_view> waitSemaphoreNames, std::span<std::string_view> startSemaphoreNames);

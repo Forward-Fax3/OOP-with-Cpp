@@ -52,6 +52,11 @@ namespace OWC::Graphics
 		data->BeginDynamicPass();
 	}
 
+	void Renderer::BindUniform(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader, const std::shared_ptr<UniformBuffer>& uniformBuffer)
+	{
+		data->BindUniform(shader, uniformBuffer);
+	}
+
 	void Renderer::Draw(const std::shared_ptr<RenderPassData>& data, uint32_t vertexCount, uint32_t instanceCount /*= 1*/, uint32_t firstVertex /*= 0*/, uint32_t firstInstance /*= 0*/)
 	{
 		data->Draw(vertexCount, instanceCount, firstVertex, firstInstance);

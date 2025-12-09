@@ -1,3 +1,10 @@
+cbuffer image
+{
+//    Sampler2D<float4> texture;
+//    float numberOfSamples;
+    float4 colour;
+};
+
 struct VertexData
 {
 	static float2[] data = {
@@ -20,30 +27,27 @@ struct Fragment
 
 struct VertexStageOutput
 {
-//    CoarseVertex    coarseVertex    : CoarseVertex;
-    float4          sv_position     : SV_Position;
+    float4 sv_position : SV_Position;
+//    float2 uv : UV;
 };
 
 [shader("vertex")]
 VertexStageOutput vertexMain(uint VetexIndex : SV_VertexID)
 {
     VertexStageOutput output;
-
-//    float3 position = assembledVertex.position;
-//    float3 color    = assembledVertex.color;
-
-//    output.coarseVertex.color = color;
-    output.sv_position = float4(VertexData.data[VertexData.indices[VetexIndex]], 1.0);
+    float2 vetData = VertexData.data[VertexData.indices[VetexIndex]];
+    output.sv_position = float4(vetData, 1.0);
+//    output.uv = ((vetData * 2) + 1) / 2;
 
     return output;
 }
 
 [shader("fragment")]
-Fragment fragmentMain() : SV_Target
+//float4 fragmentMain(float2 uv : UV) : SV_Target
+float4 fragmentMain() : SV_Target
 {
-//	float3 colour = coarseVertex.color;
-
-    Fragment output;
-    output.colour = float4(1.0, 0.0, 0.0, 1.0);
+    float4 output;
+//    output = texture.Sample(uv) / numberOfSamples;
+    output = colour;
     return output;
 }

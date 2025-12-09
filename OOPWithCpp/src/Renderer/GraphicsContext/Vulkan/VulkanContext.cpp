@@ -169,12 +169,10 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugMessageFunc( // TODO: add objects i
 
 namespace OWC::Graphics
 {
-	std::array<const char*, 5> l_DeviceExtensions = {
+	std::array<const char*, 3> l_DeviceExtensions = {
 			vk::KHRSwapchainExtensionName,
-			vk::KHRMaintenance1ExtensionName,
-			vk::KHRShaderDrawParametersExtensionName,
-			vk::KHRDynamicRenderingExtensionName,
-			vk::KHRSynchronization2ExtensionName
+			vk::EXTPageableDeviceLocalMemoryExtensionName,
+			vk::EXTMemoryPriorityExtensionName
 	};
 
 	VulkanContext::VulkanContext(SDL_Window& windowHandle)
@@ -391,7 +389,6 @@ namespace OWC::Graphics
 
 		auto instanceExtertionProperties = vk::enumerateInstanceExtensionProperties();
 
-		extentions.emplace_back(vk::KHRGetPhysicalDeviceProperties2ExtensionName);
 		extentions.emplace_back(vk::KHRGetSurfaceCapabilities2ExtensionName);
 
 		vk::InstanceCreateInfo createInfo;
@@ -646,8 +643,28 @@ namespace OWC::Graphics
 				.setPQueuePriorities(familyData.second.data())
 			);
 
-		vk::PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeature = vk::PhysicalDeviceDescriptorIndexingFeatures()
+		vk::PhysicalDeviceMemoryPriorityFeaturesEXT memoryPriorityFeature = vk::PhysicalDeviceMemoryPriorityFeaturesEXT()
 			.setPNext(nullptr)
+			.setMemoryPriority(vk::True);
+
+		vk::PhysicalDevicePageableDeviceLocalMemoryFeaturesEXT pageableDeviceLocalMemoryFeature = vk::PhysicalDevicePageableDeviceLocalMemoryFeaturesEXT()
+			.setPNext(&memoryPriorityFeature)
+			.setPageableDeviceLocalMemory(vk::True);
+
+		vk::PhysicalDeviceShaderObjectFeaturesEXT shaderObjectFeature = vk::PhysicalDeviceShaderObjectFeaturesEXT()
+			.setPNext(&pageableDeviceLocalMemoryFeature)
+			.setShaderObject(vk::True);
+
+		vk::PhysicalDeviceShaderDrawParameterFeatures shaderDrawParametersFeature = vk::PhysicalDeviceShaderDrawParameterFeatures()
+			.setPNext(&shaderObjectFeature)
+			.setShaderDrawParameters(vk::True);
+
+		vk::PhysicalDeviceSwapchainMaintenance1FeaturesKHR swapchainMaintenance1Feature = vk::PhysicalDeviceSwapchainMaintenance1FeaturesKHR()
+			.setPNext(&shaderDrawParametersFeature)
+			.setSwapchainMaintenance1(vk::True);
+
+		vk::PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeature = vk::PhysicalDeviceDescriptorIndexingFeatures()
+			.setPNext(&swapchainMaintenance1Feature)
 			.setRuntimeDescriptorArray(vk::True)
 			.setDescriptorBindingPartiallyBound(vk::True)
 			.setDescriptorBindingVariableDescriptorCount(vk::True)
@@ -655,16 +672,8 @@ namespace OWC::Graphics
 			.setShaderStorageBufferArrayNonUniformIndexing(vk::True)
 			.setShaderUniformBufferArrayNonUniformIndexing(vk::True);
 
-		vk::PhysicalDeviceSwapchainMaintenance1FeaturesKHR swapchainMaintenance1Feature = vk::PhysicalDeviceSwapchainMaintenance1FeaturesKHR()
-			.setPNext(&descriptorIndexingFeature)
-			.setSwapchainMaintenance1(vk::True);
-
-		vk::PhysicalDeviceShaderObjectFeaturesEXT shaderObjectFeature = vk::PhysicalDeviceShaderObjectFeaturesEXT()
-			.setPNext(&swapchainMaintenance1Feature)
-			.setShaderObject(vk::True);
-
 		vk::PhysicalDeviceSynchronization2Features synchronization2Feature = vk::PhysicalDeviceSynchronization2Features()
-			.setPNext(shaderObjectFeature)
+			.setPNext(descriptorIndexingFeature)
 			.setSynchronization2(vk::True);
 
 		const vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature = vk::PhysicalDeviceDynamicRenderingFeatures()
@@ -674,10 +683,8 @@ namespace OWC::Graphics
 		VulkanCore::GetInstance().SetDevice(
 			VulkanCore::GetConstInstance().GetPhysicalDev().createDevice(
 				vk::DeviceCreateInfo()
-				.setQueueCreateInfoCount(static_cast<uint32_t>(deviceQueueCreateInfos.size()))
-				.setPQueueCreateInfos(deviceQueueCreateInfos.data())
-				.setEnabledExtensionCount(static_cast<uint32_t>(l_DeviceExtensions.size()))
-				.setPpEnabledExtensionNames(l_DeviceExtensions.data())
+				.setQueueCreateInfos(deviceQueueCreateInfos)
+				.setPEnabledExtensionNames(l_DeviceExtensions)
 				.setPNext(&dynamicRenderingFeature)
 			)
 		);
@@ -997,8 +1004,7 @@ namespace OWC::Graphics
 		vk::DescriptorPoolCreateInfo poolInfo = vk::DescriptorPoolCreateInfo()
 			.setFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet)
 			.setMaxSets(1000)
-			.setPoolSizeCount(static_cast<uint32_t>(poolSizes.size()))
-			.setPPoolSizes(poolSizes.data());
+			.setPoolSizes(poolSizes);
 
 		VulkanCore::GetInstance().SetImGuiDescriptorPool(vkCore.GetDevice().createDescriptorPool(poolInfo));
 
