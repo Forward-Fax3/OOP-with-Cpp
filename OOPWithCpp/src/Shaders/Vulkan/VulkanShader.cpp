@@ -1,6 +1,7 @@
 ﻿#include "Application.hpp"
 #include "VulkanCore.hpp"
 #include "VulkanShader.hpp"
+#include "VulkanUniformBuffer.hpp"
 #include "Log.hpp"
 
 
@@ -37,6 +38,82 @@ namespace OWC::Graphics
 
 		for (const auto& shaderModule : m_ShaderModules)
 			VulkanCore::GetInstance().GetDevice().destroyShaderModule(shaderModule);
+	}
+
+	void VulkanShader::BindUniform(uint32_t binding, const std::shared_ptr<UniformBuffer>& uniformBuffer)
+	{
+		const auto vulkanUniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(uniformBuffer);
+
+		const auto& vkCore = VulkanCore::GetConstInstance();
+		const auto& device = vkCore.GetDevice();
+
+		std::vector<vk::WriteDescriptorSet> writeDescriptorSets{};
+		writeDescriptorSets.reserve(vulkanUniformBuffer->GetBuffers().size());
+
+		std::vector<vk::DescriptorBufferInfo> descriptorBufferInfos{}; // keep alive until updateDescriptorSets is called
+		descriptorBufferInfos.reserve(vulkanUniformBuffer->GetBuffers().size());
+
+		for (const auto& buffer : vulkanUniformBuffer->GetBuffers())
+		{
+			descriptorBufferInfos.emplace_back(
+				buffer,
+				0,
+				vulkanUniformBuffer->GetBufferSize()
+			);
+
+			writeDescriptorSets.emplace_back(
+				m_DescriptorSet,
+				binding,
+				0,
+				1,
+				vk::DescriptorType::eUniformBuffer,
+				nullptr,
+				&descriptorBufferInfos.back()
+			);
+		}
+
+		device.updateDescriptorSets(writeDescriptorSets, {});
+	}
+
+	void VulkanShader::BindTexture(uint32_t binding, const std::shared_ptr<TextureBuffer>& textureBuffer)
+	{
+		const auto vulkanTextureBuffer = std::dynamic_pointer_cast<VulkanTextureBuffer>(textureBuffer);
+		if (!vulkanTextureBuffer)
+		{
+			Log<LogLevel::Error>("VulkanShader::BindTexture: Invalid VulkanTextureBuffer pointer.");
+			return;
+		}
+
+		const auto& vkCore = VulkanCore::GetConstInstance();
+		const auto& device = vkCore.GetDevice();
+
+		vk::DescriptorImageInfo descriptorImageInfo = vk::DescriptorImageInfo()
+			.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+			.setImageView(vulkanTextureBuffer->GetImageView())
+			.setSampler(vulkanTextureBuffer->GetSampler());
+
+		vk::WriteDescriptorSet writeDescriptorSets = vk::WriteDescriptorSet()
+			.setDstSet(m_DescriptorSet)
+			.setDstBinding(binding)
+			.setDstArrayElement(0)
+			.setDescriptorCount(1)
+			.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+			.setImageInfo(descriptorImageInfo);
+
+//		writeDescriptorSets.emplace_back(
+//			m_DescriptorSet,
+//			binding,
+//			0,
+//			1,
+//			vk::DescriptorType::eCombinedImageSampler,
+//			&vk::DescriptorImageInfo()
+//				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+//				.setImageView(vulkanTextureBuffer->GetImageView())
+//				.setSampler(vulkanTextureBuffer->GetSampler()),
+//			nullptr
+//		);
+
+		device.updateDescriptorSets(writeDescriptorSets, {});
 	}
 
 	void VulkanShader::CreateVulkanPipeline(const std::span<VulkanShaderData>& vulkanShaderDatas)
@@ -175,9 +252,32 @@ namespace OWC::Graphics
 		// build Descriptor Pool
 		// TODO: make this dynamic based on actual usage
 
-		vk::DescriptorPoolSize poolSize = vk::DescriptorPoolSize()
-			.setType(vk::DescriptorType::eUniformBuffer)  
-			.setDescriptorCount(10);
+		std::vector<vk::DescriptorPoolSize> poolSize;
+
+		for (const auto& shaderData : vulkanShaderDatas)
+		{
+			for (const auto& bindingDescription : shaderData.bindingDescriptions)
+			{
+				vk::DescriptorType descriptorType = ConvertToVulkanDescriptorType(bindingDescription.descriptorType);
+
+				auto it = std::ranges::find_if(poolSize, [descriptorType](const vk::DescriptorPoolSize& size)
+					{
+						return size.type == descriptorType;
+					});
+
+				if (it != poolSize.end())
+				{
+					it->descriptorCount += bindingDescription.descriptorCount * 10; // assuming max 10 sets
+				}
+				else
+				{
+					poolSize.emplace_back(
+						descriptorType,
+						bindingDescription.descriptorCount * 10 // assuming max 10 sets
+					);
+				}
+			}
+		}
 
 		vk::DescriptorPoolCreateInfo poolInfo = vk::DescriptorPoolCreateInfo()
 			.setPoolSizes(poolSize)

@@ -24,10 +24,13 @@ namespace OWC::Graphics
 	public:
 		explicit VulkanShader(const std::span<ShaderData>& shaderDatas);
 		~VulkanShader() override;
-		VulkanShader(VulkanShader&) = default;
-		VulkanShader& operator=(VulkanShader&) = default;
-		VulkanShader(VulkanShader&&) noexcept = default;
-		VulkanShader& operator=(VulkanShader&&) noexcept = default;
+		VulkanShader(VulkanShader&) = delete;
+		VulkanShader& operator=(VulkanShader&) = delete;
+		VulkanShader(VulkanShader&&) noexcept = delete;
+		VulkanShader& operator=(VulkanShader&&) noexcept = delete;
+
+		void BindUniform(uint32_t binding, const std::shared_ptr<UniformBuffer>& uniformBuffer) override;
+		void BindTexture(uint32_t binding, const std::shared_ptr<TextureBuffer>& textureBuffer) override;
 
 		[[nodiscard]] vk::Pipeline GetPipeline() const { return m_Pipeline; }
 		[[nodiscard]] vk::PipelineLayout GetPipelineLayout() const { return m_PipelineLayout; }

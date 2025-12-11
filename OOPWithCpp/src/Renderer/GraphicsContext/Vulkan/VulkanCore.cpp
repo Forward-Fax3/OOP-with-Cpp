@@ -122,6 +122,36 @@ namespace OWC::Graphics
 		return commandBuffers;
 	}
 
+	vk::CommandBuffer VulkanCore::GetSingleTimeGraphicsCommandBuffer() const
+	{
+		return m_Device.allocateCommandBuffers(
+			vk::CommandBufferAllocateInfo()
+			.setCommandPool(m_GraphicsCommandPool)
+			.setLevel(vk::CommandBufferLevel::ePrimary)
+			.setCommandBufferCount(1)
+		)[0];
+	}
+
+	vk::CommandBuffer VulkanCore::GetSingleTimeComputeCommandBuffer() const
+	{
+		return m_Device.allocateCommandBuffers(
+			vk::CommandBufferAllocateInfo()
+			.setCommandPool(m_ComputeCommandPool)
+			.setLevel(vk::CommandBufferLevel::ePrimary)
+			.setCommandBufferCount(1)
+		)[0];
+	}
+
+	vk::CommandBuffer VulkanCore::GetSingleTimeTransferCommandBuffer() const
+	{
+		return m_Device.allocateCommandBuffers(
+			vk::CommandBufferAllocateInfo()
+			.setCommandPool(m_TransferCommandPool)
+			.setLevel(vk::CommandBufferLevel::ePrimary)
+			.setCommandBufferCount(1)
+		)[0];
+	}
+
 	std::vector<vk::Semaphore> VulkanCore::GetSemaphoresFromNames(std::span<std::string_view> semaphoreNames)
 	{
 		std::vector<vk::Semaphore> semaphores;

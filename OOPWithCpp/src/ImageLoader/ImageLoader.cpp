@@ -1,4 +1,4 @@
-#define STB_IMAGE_IMPLEMENTATION
+﻿#define STB_IMAGE_IMPLEMENTATION
 #include "ImageLoader.hpp"
 #include "Log.hpp"
 
@@ -22,16 +22,12 @@ namespace OWC
 
 		m_ImageData.reserve(m_Width * m_Height);
 
-		for (size_t y = 0; y < m_Height; y++)
-			for (size_t x = 0; x < m_Width; x++)
-			{
-				size_t index = (y * m_Width + x) * 3;
-
-				m_ImageData.emplace_back(
-					imageDataPtr[index + 0],
-					imageDataPtr[index + 1],
-					imageDataPtr[index + 2],
-					1.0f);
-			}
+		for (size_t i = 0; i < m_Height * m_Width * 4; i += 4)
+			m_ImageData.emplace_back(
+				imageDataPtr[i + 0],	// R
+				imageDataPtr[i + 1],	// G
+				imageDataPtr[i + 2],	// B
+				imageDataPtr[i + 3]		// A
+			);
 	}
 }

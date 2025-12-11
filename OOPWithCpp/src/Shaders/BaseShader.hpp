@@ -1,4 +1,6 @@
 ﻿#pragma once
+#include "UniformBuffer.hpp"
+
 #include <string>
 #include <vector>
 #include <span>
@@ -75,6 +77,9 @@ namespace OWC::Graphics
 		BaseShader& operator=(BaseShader&) = default;
 		BaseShader(BaseShader&&) noexcept = default;
 		BaseShader& operator=(BaseShader&&) noexcept = default;
+
+		virtual void BindUniform(uint32_t binding, const std::shared_ptr<UniformBuffer>& uniformBuffer) = 0;
+		virtual void BindTexture(uint32_t binding, const std::shared_ptr<TextureBuffer>& textureBuffer) = 0;
 
 		static std::unique_ptr<BaseShader> CreateShader(const std::span<ShaderData>& shaderDatas);
 	};

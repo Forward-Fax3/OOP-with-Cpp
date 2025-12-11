@@ -52,9 +52,9 @@ namespace OWC::Graphics
 		data->BeginDynamicPass();
 	}
 
-	void Renderer::BindUniform(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader, const std::shared_ptr<UniformBuffer>& uniformBuffer)
+	void Renderer::BindUniform(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader)
 	{
-		data->BindUniform(shader, uniformBuffer);
+		data->BindUniform(shader);
 	}
 
 	void Renderer::Draw(const std::shared_ptr<RenderPassData>& data, uint32_t vertexCount, uint32_t instanceCount /*= 1*/, uint32_t firstVertex /*= 0*/, uint32_t firstInstance /*= 0*/)
@@ -86,5 +86,10 @@ namespace OWC::Graphics
 	void Renderer::DrawImGui(const std::shared_ptr<RenderPassData>& data, ImDrawData* drawData)
 	{
 		data->DrawImGui(drawData);
+	}
+
+	void Renderer::BindTexture(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader, uint32_t binding, uint32_t textureID)
+	{
+		data->BindTexture(shader, binding, textureID);
 	}
 };

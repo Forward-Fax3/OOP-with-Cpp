@@ -676,16 +676,25 @@ namespace OWC::Graphics
 			.setPNext(descriptorIndexingFeature)
 			.setSynchronization2(vk::True);
 
-		const vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature = vk::PhysicalDeviceDynamicRenderingFeatures()
+		vk::PhysicalDeviceDynamicRenderingFeatures dynamicRenderingFeature = vk::PhysicalDeviceDynamicRenderingFeatures()
 			.setPNext(&synchronization2Feature)
 			.setDynamicRendering(vk::True);
+
+		vk::PhysicalDeviceFeatures2 enabledFeatures = vk::PhysicalDeviceFeatures2()
+			.setPNext(&dynamicRenderingFeature)
+			.setFeatures(vk::PhysicalDeviceFeatures()
+				.setSamplerAnisotropy(vk::True)
+				.setSampleRateShading(vk::True)
+				.setFillModeNonSolid(vk::True)
+				.setWideLines(vk::True)
+				.setPipelineStatisticsQuery(vk::True));
 
 		VulkanCore::GetInstance().SetDevice(
 			VulkanCore::GetConstInstance().GetPhysicalDev().createDevice(
 				vk::DeviceCreateInfo()
 				.setQueueCreateInfos(deviceQueueCreateInfos)
 				.setPEnabledExtensionNames(l_DeviceExtensions)
-				.setPNext(&dynamicRenderingFeature)
+				.setPNext(&enabledFeatures)
 			)
 		);
 

@@ -80,6 +80,9 @@ namespace OWC::Graphics
 		[[nodiscard]] std::vector<vk::CommandBuffer> GetDynamicGraphicsCommandBuffer() const;
 		[[nodiscard]] std::vector<vk::CommandBuffer> GetDynamicComputeCommandBuffer() const;
 		[[nodiscard]] std::vector<vk::CommandBuffer> GetDynamicTransferCommandBuffer() const;
+		[[nodiscard]] vk::CommandBuffer GetSingleTimeGraphicsCommandBuffer() const;
+		[[nodiscard]] vk::CommandBuffer GetSingleTimeComputeCommandBuffer() const;
+		[[nodiscard]] vk::CommandBuffer GetSingleTimeTransferCommandBuffer() const;
 
 		[[nodiscard]] std::vector<vk::Semaphore> GetSemaphoresFromNames(std::span<std::string_view> semaphoreNames);
 

@@ -1,10 +1,13 @@
-#pragma once
+﻿#pragma once
+#include <cstdint>
 #include <string>
 #include <bit>
 
 
 namespace OWC
 {
+	using bool32 = uint32_t;
+
     [[nodiscard]] consteval bool IsDebugMode() noexcept
     {
     #ifdef NDEBUG

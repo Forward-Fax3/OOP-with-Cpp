@@ -114,50 +114,21 @@ namespace OWC::Graphics
 				cmdBuf.bindPipeline(vk::PipelineBindPoint::eGraphics, vulkanShader.GetPipeline());
 	}
 
-	void VulkanRenderPass::BindUniform(const BaseShader& shader, const std::shared_ptr<UniformBuffer>& uniformBuffer)
+	void VulkanRenderPass::BindUniform(const BaseShader& shader)
 	{
 		const auto& vulkanShader = dynamic_cast<const VulkanShader&>(shader);
-		const auto& vulkanUniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(uniformBuffer);
-		(void)vulkanUniformBuffer; // to avoid unused variable warning if assertions are disabled
 
 		if (GetRenderPassType() == RenderPassType::Dynamic)
-		{
-			size_t frameIndex = VulkanCore::GetConstInstance().GetCurrentFrameIndex();
-			m_CommandBuffers[frameIndex].bindDescriptorSets(
+			m_CommandBuffers[VulkanCore::GetConstInstance().GetCurrentFrameIndex()].bindDescriptorSets(
 				vk::PipelineBindPoint::eGraphics,
 				vulkanShader.GetPipelineLayout(),
 				0,
 				vulkanShader.GetDescriptorSet(),
 				{}
 			);
-		}
+
 		else
-		{
-			// update descriptor sets if needed
-
-			std::vector<vk::WriteDescriptorSet> writeDescriptorSets;
-
-			for (size_t i = 0; i < VulkanCore::GetConstInstance().GetNumberOfFramesInFlight(); ++i)
-			{
-				vk::DescriptorBufferInfo bufferInfo = vk::DescriptorBufferInfo()
-					.setBuffer(vulkanUniformBuffer->GetBuffers()[i])
-					.setOffset(0)
-					.setRange(vulkanUniformBuffer->GetBufferSize());
-
-				vk::WriteDescriptorSet writeDescriptorSet = vk::WriteDescriptorSet()
-					.setDstSet(vulkanShader.GetDescriptorSet())
-					.setDstBinding(0)
-					.setDstArrayElement(0)
-					.setDescriptorType(vk::DescriptorType::eUniformBuffer)
-					.setBufferInfo(bufferInfo);
-
-				writeDescriptorSets.push_back(writeDescriptorSet);
-			}
-
-			VulkanCore::GetConstInstance().GetDevice().updateDescriptorSets(writeDescriptorSets, {});
-
-
-			for (auto& cmdBuf : m_CommandBuffers)
+			for (const auto& cmdBuf : m_CommandBuffers)
 				cmdBuf.bindDescriptorSets(
 					vk::PipelineBindPoint::eGraphics,
 					vulkanShader.GetPipelineLayout(),
@@ -165,7 +136,33 @@ namespace OWC::Graphics
 					vulkanShader.GetDescriptorSet(),
 					{}
 				);
-		}
+	}
+
+	void VulkanRenderPass::BindTexture(const BaseShader& shader, uint32_t binding, uint32_t textureID)
+	{
+		(void)binding;
+		(void)textureID;
+
+		const auto& vulkanShader = dynamic_cast<const VulkanShader&>(shader);
+
+		if (GetRenderPassType() == RenderPassType::Dynamic)
+			m_CommandBuffers[VulkanCore::GetConstInstance().GetCurrentFrameIndex()].bindDescriptorSets(
+				vk::PipelineBindPoint::eGraphics,
+				vulkanShader.GetPipelineLayout(),
+				0,
+				vulkanShader.GetDescriptorSet(),
+				{}
+			);
+
+		else
+			for (const auto& cmdBuf : m_CommandBuffers)
+				cmdBuf.bindDescriptorSets(
+					vk::PipelineBindPoint::eGraphics,
+					vulkanShader.GetPipelineLayout(),
+					0,
+					vulkanShader.GetDescriptorSet(),
+					{}
+				);
 	}
 
 	void VulkanRenderPass::Draw(uint32_t vertexCount, uint32_t instanceCount /*= 1*/, uint32_t firstVertex /*= 0*/, uint32_t firstInstance /*= 0*/)

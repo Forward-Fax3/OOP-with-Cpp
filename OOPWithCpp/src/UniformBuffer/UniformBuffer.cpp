@@ -1,4 +1,4 @@
-#include "UniformBuffer.hpp"
+﻿#include "UniformBuffer.hpp"
 #include "VulkanUniformBuffer.hpp"
 
 
@@ -8,5 +8,11 @@ namespace OWC::Graphics
 	{
 		// For now, only Vulkan is supported
 		return std::make_shared<VulkanUniformBuffer>(size);
+	}
+
+	std::shared_ptr<TextureBuffer> TextureBuffer::CreateTextureBuffer(const ImageLoader& image)
+	{
+		// For now, only Vulkan is supported
+		return std::make_shared<VulkanTextureBuffer>(image);
 	}
 }
