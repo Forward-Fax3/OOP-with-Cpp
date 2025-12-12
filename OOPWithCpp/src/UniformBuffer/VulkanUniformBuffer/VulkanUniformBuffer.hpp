@@ -36,22 +36,28 @@ namespace OWC::Graphics
 	public:
 		VulkanTextureBuffer() = delete;
 		explicit VulkanTextureBuffer(const ImageLoader& image);
+		explicit VulkanTextureBuffer(uint32_t width, uint32_t height);
 		~VulkanTextureBuffer() override;
 		VulkanTextureBuffer(VulkanTextureBuffer&) = delete;
 		VulkanTextureBuffer& operator=(VulkanTextureBuffer&) = delete;
 		VulkanTextureBuffer(VulkanTextureBuffer&&) noexcept = delete;
 		VulkanTextureBuffer& operator=(VulkanTextureBuffer&&) noexcept = delete;
 
-		void UpdateBufferData(const ImageLoader& data) override;
+		void UpdateBufferData(const std::vector<glm::vec4>& data) override;
 
 		[[nodiscard]] vk::Image GetImage() const { return m_TextureImage; }
 		[[nodiscard]] vk::ImageView GetImageView() const { return m_TextureImageView; }
 		[[nodiscard]] vk::Sampler GetSampler() const { return m_TextureSampler; }
 
 	private:
+		void InitializeTexture();
+
+	private:
 		vk::Image m_TextureImage = vk::Image();
 		vk::DeviceMemory m_TextureImageMemory = vk::DeviceMemory();
 		vk::ImageView m_TextureImageView = vk::ImageView();
 		vk::Sampler m_TextureSampler = vk::Sampler();
+		uint32_t m_Width = 0;
+		uint32_t m_Height = 0;
 	};
 }

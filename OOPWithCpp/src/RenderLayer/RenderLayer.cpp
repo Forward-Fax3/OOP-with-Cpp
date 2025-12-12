@@ -1,6 +1,5 @@
 ﻿#include "core.hpp"
-#include "TestLayer.hpp"
-#include "Application.hpp"
+#include "RenderLayer.hpp"
 #include "LoadFile.hpp"
 #include "Renderer.hpp"
 
@@ -16,22 +15,23 @@
 
 namespace OWC
 {
-	TestLayer::TestLayer()
+	RenderLayer::RenderLayer(const std::shared_ptr<InterLayerData>& ILD)
+		: m_ILD(ILD)
 	{
 		m_UniformBuffer = Graphics::UniformBuffer::CreateUniformBuffer((sizeof(float) * 2) + sizeof(glm::vec2) + sizeof(bool32));
-		ImageLoader image("../cat.jpg");
-		m_Image = Graphics::TextureBuffer::CreateTextureBuffer(image);
-		m_Image->UpdateBufferData(image);
+		m_Image = Graphics::TextureBuffer::CreateTextureBuffer(1, 1);
+		std::vector<glm::vec4> emptyImageData = { glm::vec4(0.0f) };
+		m_Image->UpdateBufferData(emptyImageData);
 		SetupPipeline();
 		SetupRenderPass();
 	}
 
-	void TestLayer::OnUpdate()
+	void RenderLayer::OnUpdate()
 	{
 		using namespace OWC::Graphics;
 
 		std::array<std::string_view, 1> waitSemaphorenames = { "ImageReady" };
-		std::array<std::string_view, 1> signalSemaphoreNames = { "TestLayer" };
+		std::array<std::string_view, 1> signalSemaphoreNames = { "RenderLayer" };
 
 		struct UniformBufferObject
 		{
@@ -48,27 +48,56 @@ namespace OWC
 		ubo.toggleUV = static_cast<bool32>(m_ToggleUV);
 
 		m_UniformBuffer->UpdateBufferData(std::as_bytes(std::span<const UniformBufferObject>(&ubo, 1)));
+
+		if (m_ILD->ImageUpdates.any())
+		{
+			if (m_ILD->ImageUpdates[1] && m_ILD->imageWidth > 0 && m_ILD->imageHeight > 0) // image resize
+			{
+				m_Image = TextureBuffer::CreateTextureBuffer(m_ILD->imageWidth, m_ILD->imageHeight);
+				m_Image->UpdateBufferData(m_ILD->imageData);
+				SetupPipeline();
+				SetupRenderPass();
+			}
+			else if (m_ILD->imageWidth == 0 || m_ILD->imageHeight == 0) // clear image
+			{
+				m_Image = TextureBuffer::CreateTextureBuffer(1, 1);
+				std::vector<glm::vec4> emptyImageData = { glm::vec4(0.0f) };
+				m_Image->UpdateBufferData(emptyImageData);
+				SetupPipeline();
+				SetupRenderPass();
+			}
+			else if (m_ILD->ImageUpdates[0]) // update image
+			{
+				m_Image->UpdateBufferData(m_ILD->imageData);
+			}
+			m_ILD->ImageUpdates.reset();
+		}
+
 		Renderer::RestartRenderPass(m_renderPass);
 		Renderer::SubmitRenderPass(m_renderPass, waitSemaphorenames, signalSemaphoreNames);
 	}
 
-	void TestLayer::ImGuiRender()
+	void RenderLayer::ImGuiRender()
 	{ 
 		constexpr float min = 0.001f;
 		constexpr float max = 5.0f;
 
+		constexpr float imageOffsetMin = 0.0f;
+		constexpr float imageOffsetMax = 1.0f;
+		constexpr float iamgeOffsetStep = 0.01f;
+
 		float DividerStep = m_Divider / 100.0f;
 		float ImageScaleStep = m_ImageScale / 100.0f;
 
-		ImGui::Begin("Test Layer");
+		ImGui::Begin("Render Layer");
 		ImGui::DragFloat("Divider", &m_Divider, DividerStep, min, max);
 		ImGui::DragFloat("Image Scale", &m_ImageScale, ImageScaleStep, min, max);
-		ImGui::DragFloat2("Image Offset", glm::value_ptr(m_ImageOffset), 0.01f, 0.0f, 1.0f);
+		ImGui::DragFloat2("Image Offset", glm::value_ptr(m_ImageOffset), iamgeOffsetStep, imageOffsetMin, imageOffsetMax);
 		ImGui::Checkbox("Toggle UV", &m_ToggleUV);
 		ImGui::End();
 	}
 
-	void TestLayer::OnEvent(class BaseEvent& e)
+	void RenderLayer::OnEvent(class BaseEvent& e)
 	{
 		EventDispatcher dispatcher(e);
 
@@ -93,7 +122,7 @@ namespace OWC
 			});
 	}
 
-	void TestLayer::SetupRenderPass()
+	void RenderLayer::SetupRenderPass()
 	{
 		using namespace OWC::Graphics;
 		constexpr uint32_t numberOfVertices = 6;
@@ -106,7 +135,7 @@ namespace OWC
 		Renderer::EndPass(m_renderPass);
 	}
 
-	void TestLayer::SetupPipeline()
+	void RenderLayer::SetupPipeline()
 	{
 		using namespace OWC::Graphics;
 

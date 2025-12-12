@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <span>
 #include <memory>
+#include <vector>
+#include <glm/vec4.hpp>
 
 
 namespace OWC::Graphics
@@ -33,8 +35,9 @@ namespace OWC::Graphics
 		TextureBuffer(TextureBuffer&&) noexcept = default;
 		TextureBuffer& operator=(TextureBuffer&&) noexcept = default;
 
-		virtual void UpdateBufferData(const ImageLoader& data) = 0;
+		virtual void UpdateBufferData(const std::vector<glm::vec4>& data) = 0;
 
 		static std::shared_ptr<TextureBuffer> CreateTextureBuffer(const ImageLoader& image);
+		static std::shared_ptr<TextureBuffer> CreateTextureBuffer(uint32_t width, uint32_t height);
 	};
 }

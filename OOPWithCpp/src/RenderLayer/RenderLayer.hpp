@@ -3,6 +3,7 @@
 #include "BaseShader.hpp"
 #include "Renderer.hpp"
 #include "UniformBuffer.hpp"
+#include "InterLayerData.hpp"
 
 #include <memory>
 #include <glm/glm.hpp>
@@ -10,15 +11,16 @@
 
 namespace OWC
 {
-	class TestLayer : public Layer
+	class RenderLayer : public Layer
 	{
 	public:
-		TestLayer();
-		~TestLayer() override = default;
-		TestLayer(const TestLayer&) = delete;
-		TestLayer& operator=(const TestLayer&) = delete;
-		TestLayer(TestLayer&&) = delete;
-		TestLayer& operator=(TestLayer&&) = delete;
+		RenderLayer() = delete;
+		explicit RenderLayer(const std::shared_ptr<InterLayerData>& ILD);
+		~RenderLayer() override = default;
+		RenderLayer(const RenderLayer&) = delete;
+		RenderLayer& operator=(const RenderLayer&) = delete;
+		RenderLayer(RenderLayer&&) = delete;
+		RenderLayer& operator=(RenderLayer&&) = delete;
 
 		void OnUpdate() override;
 		void ImGuiRender() override;
@@ -37,5 +39,6 @@ namespace OWC
 		float m_ImageScale = 1.0f;
 		glm::vec2 m_ImageOffset = glm::vec2(0.0f, 0.0f);
 		bool m_ToggleUV = false;
+		std::shared_ptr<InterLayerData> m_ILD = nullptr;
 	};
 }

@@ -96,7 +96,7 @@ namespace OWC
 		ImGui::Render();
 		ImDrawData* drawData = ImGui::GetDrawData();
 
-		std::array<std::string_view, 1> waitSemaphorenames = { "TestLayer" };
+		std::array<std::string_view, 1> waitSemaphorenames = { "RenderLayer" };
 		std::array<std::string_view, 1> signalSemaphoreNames = { "ImGuiLayer" };
 
 		static bool firstFrame = true;

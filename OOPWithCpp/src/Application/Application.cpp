@@ -9,7 +9,7 @@
 
 #include "Log.hpp"
 
-#include "TestLayer.hpp"
+#include "MainLayer.hpp"
 #include "ImGuiLayer.hpp"
 
 
@@ -35,7 +35,7 @@ namespace OWC
 		m_Window->SetEventCallback([](BaseEvent& e) { s_Instance->OnEvent(e); });
 		Graphics::Renderer::Init();
 		m_LayerStack = std::make_unique<LayerStack>();
-		PushLayer(std::make_shared<TestLayer>());
+		PushLayer(std::make_shared<MainLayer>());
 		m_ImGuiLayer = std::make_shared<ImGuiLayer>();
 		PushOverlay(m_ImGuiLayer);
 	}

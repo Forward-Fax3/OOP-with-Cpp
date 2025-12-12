@@ -68,64 +68,16 @@ namespace OWC::Graphics
 	//--------------------------------------------------------
 
 	VulkanTextureBuffer::VulkanTextureBuffer(const ImageLoader& image)
+		: m_Width(static_cast<uint32_t>(image.GetWidth())), m_Height(static_cast<uint32_t>(image.GetHeight()))
 	{
-		const auto& vkCore = VulkanCore::GetInstance();
-		const auto& device = vkCore.GetDevice();
+		InitializeTexture();
+		VulkanTextureBuffer::UpdateBufferData(image.GetImageData()); // using specifically VulkanTextureBuffer to remove static analysis warning
+	}
 
-		// Create image
-		m_TextureImage = device.createImage(vk::ImageCreateInfo()
-			.setImageType(vk::ImageType::e2D)
-			.setFormat(vk::Format::eR32G32B32A32Sfloat)
-			.setExtent(vk::Extent3D()
-				.setWidth(static_cast<uint32_t>(image.GetWidth()))
-				.setHeight(static_cast<uint32_t>(image.GetHeight()))
-				.setDepth(1))
-			.setMipLevels(1)
-			.setArrayLayers(1)
-			.setSamples(vk::SampleCountFlagBits::e1)
-			.setTiling(vk::ImageTiling::eOptimal)
-			.setUsage(vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst)
-			.setSharingMode(vk::SharingMode::eExclusive)
-			.setInitialLayout(vk::ImageLayout::eUndefined));
-
-		// Allocate image memory
-		vk::MemoryRequirements memRequirements = device.getImageMemoryRequirements(m_TextureImage);
-
-		m_TextureImageMemory = device.allocateMemory(vk::MemoryAllocateInfo()
-			.setAllocationSize(memRequirements.size)
-			.setMemoryTypeIndex(vkCore.FindMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal)));
-
-		device.bindImageMemory(m_TextureImage, m_TextureImageMemory, 0);
-
-		// Create image view
-		m_TextureImageView = device.createImageView(vk::ImageViewCreateInfo()
-			.setImage(m_TextureImage)
-			.setViewType(vk::ImageViewType::e2D)
-			.setFormat(vk::Format::eR32G32B32A32Sfloat)
-			.setSubresourceRange(vk::ImageSubresourceRange()
-				.setAspectMask(vk::ImageAspectFlagBits::eColor)
-				.setBaseMipLevel(0)
-				.setLevelCount(1)
-				.setBaseArrayLayer(0)
-				.setLayerCount(1)));
-
-		// Create sampler
-		m_TextureSampler = device.createSampler(vk::SamplerCreateInfo()
-			.setMagFilter(vk::Filter::eLinear)
-			.setMinFilter(vk::Filter::eLinear)
-			.setAddressModeU(vk::SamplerAddressMode::eRepeat)
-			.setAddressModeV(vk::SamplerAddressMode::eRepeat)
-			.setAddressModeW(vk::SamplerAddressMode::eRepeat)
-			.setAnisotropyEnable(vk::True)
-			.setMaxAnisotropy(16) // TODO: Query max anisotropy from physical device properties
-			.setBorderColor(vk::BorderColor::eIntOpaqueBlack)
-			.setUnnormalizedCoordinates(vk::False)
-			.setCompareEnable(vk::False)
-			.setCompareOp(vk::CompareOp::eAlways)
-			.setMipmapMode(vk::SamplerMipmapMode::eLinear)
-			.setMipLodBias(0.0f)
-			.setMinLod(0.0f)
-			.setMaxLod(0.0f));
+	VulkanTextureBuffer::VulkanTextureBuffer(uint32_t width, uint32_t height)
+		: m_Width(width), m_Height(height)
+	{
+		InitializeTexture();
 	}
 
 	VulkanTextureBuffer::~VulkanTextureBuffer()
@@ -137,7 +89,7 @@ namespace OWC::Graphics
 		device.freeMemory(m_TextureImageMemory);
 	}
 
-	void VulkanTextureBuffer::UpdateBufferData(const ImageLoader& data)
+	void VulkanTextureBuffer::UpdateBufferData(const std::vector<glm::vec4>& data)
 	{
 		const auto& vkCore = VulkanCore::GetInstance();
 		const auto& device = vkCore.GetDevice();
@@ -146,7 +98,7 @@ namespace OWC::Graphics
 		vk::DeviceMemory stagingBufferMemory;
 
 		// Create staging buffer
-		vk::DeviceSize imageSize = data.GetWidth() * data.GetHeight() * sizeof(glm::vec4);
+		vk::DeviceSize imageSize = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Height) * sizeof(glm::vec4);
 		stagingBuffer = device.createBuffer(vk::BufferCreateInfo()
 			.setSize(imageSize)
 			.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
@@ -161,7 +113,7 @@ namespace OWC::Graphics
 		// Copy image data to staging buffer
 		void* mappedData = device.mapMemory(stagingBufferMemory, 0, imageSize);
 
-		std::memcpy(mappedData, data.GetImageData().data(), static_cast<size_t>(imageSize));
+		std::memcpy(mappedData, data.data(), imageSize);
 
 		// Copy staging buffer to texture image and transition image layout
 		const auto& cmdBuf = vkCore.GetSingleTimeGraphicsCommandBuffer();
@@ -203,8 +155,8 @@ namespace OWC::Graphics
 					.setLayerCount(1))
 				.setImageOffset(vk::Offset3D{ 0, 0, 0 })
 				.setImageExtent(vk::Extent3D{
-					static_cast<uint32_t>(data.GetWidth()),
-					static_cast<uint32_t>(data.GetHeight()),
+					m_Width,
+					m_Height,
 					1
 				}
 			)
@@ -245,5 +197,68 @@ namespace OWC::Graphics
 		device.unmapMemory(stagingBufferMemory);
 		device.destroyBuffer(stagingBuffer);
 		device.freeMemory(stagingBufferMemory);
+	}
+
+	void VulkanTextureBuffer::InitializeTexture()
+	{
+		const auto& vkCore = VulkanCore::GetInstance();
+		const auto& device = vkCore.GetDevice();
+
+		// Create image
+		m_TextureImage = device.createImage(vk::ImageCreateInfo()
+			.setImageType(vk::ImageType::e2D)
+			.setFormat(vk::Format::eR32G32B32A32Sfloat)
+			.setExtent(vk::Extent3D()
+				.setWidth(m_Width)
+				.setHeight(m_Height)
+				.setDepth(1))
+			.setMipLevels(1)
+			.setArrayLayers(1)
+			.setSamples(vk::SampleCountFlagBits::e1)
+			.setTiling(vk::ImageTiling::eOptimal)
+			.setUsage(vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eTransferDst)
+			.setSharingMode(vk::SharingMode::eExclusive)
+			.setInitialLayout(vk::ImageLayout::eUndefined));
+
+		// Allocate image memory
+		vk::MemoryRequirements memRequirements = device.getImageMemoryRequirements(m_TextureImage);
+
+		m_TextureImageMemory = device.allocateMemory(vk::MemoryAllocateInfo()
+			.setAllocationSize(memRequirements.size)
+			.setMemoryTypeIndex(vkCore.FindMemoryType(memRequirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal)));
+
+		device.bindImageMemory(m_TextureImage, m_TextureImageMemory, 0);
+
+		// Create image view
+		m_TextureImageView = device.createImageView(vk::ImageViewCreateInfo()
+			.setImage(m_TextureImage)
+			.setViewType(vk::ImageViewType::e2D)
+			.setFormat(vk::Format::eR32G32B32A32Sfloat)
+			.setSubresourceRange(vk::ImageSubresourceRange()
+				.setAspectMask(vk::ImageAspectFlagBits::eColor)
+				.setBaseMipLevel(0)
+				.setLevelCount(1)
+				.setBaseArrayLayer(0)
+				.setLayerCount(1)));
+
+		float maxAnisotropy = vkCore.GetPhysicalDev().getProperties().limits.maxSamplerAnisotropy;
+
+		// Create sampler
+		m_TextureSampler = device.createSampler(vk::SamplerCreateInfo()
+			.setMagFilter(vk::Filter::eLinear)
+			.setMinFilter(vk::Filter::eLinear)
+			.setAddressModeU(vk::SamplerAddressMode::eRepeat)
+			.setAddressModeV(vk::SamplerAddressMode::eRepeat)
+			.setAddressModeW(vk::SamplerAddressMode::eRepeat)
+			.setAnisotropyEnable(vk::True)
+			.setMaxAnisotropy(maxAnisotropy)
+			.setBorderColor(vk::BorderColor::eIntOpaqueBlack)
+			.setUnnormalizedCoordinates(vk::False)
+			.setCompareEnable(vk::False)
+			.setCompareOp(vk::CompareOp::eAlways)
+			.setMipmapMode(vk::SamplerMipmapMode::eLinear)
+			.setMipLodBias(0.0f)
+			.setMinLod(0.0f)
+			.setMaxLod(0.0f));
 	}
 }

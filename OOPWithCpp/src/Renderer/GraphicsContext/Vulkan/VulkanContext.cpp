@@ -14,8 +14,6 @@
 #include "Log.hpp"
 
 
-// TODO: Change to Dynamic rendering
-
 #ifndef DIST
 PFN_vkCreateDebugUtilsMessengerEXT pfnVkCreateDebugUtilsMessengerEXT;
 PFN_vkDestroyDebugUtilsMessengerEXT pfnVkDestroyDebugUtilsMessengerEXT;
