@@ -209,6 +209,7 @@ project "OOPWithCppSSE4_2"
 	defines
 	{
 		"GLM_FORCE_SSE42",
+		"GLM_FORCE_SIZE_T_LENGTH",
 		"SSE4_2",
 	}
 
@@ -278,6 +279,7 @@ project "OOPWithCppAVX2"
 	{
 		"GLM_FORCE_AVX2",
 		"GLM_FORCE_FMA",
+		"GLM_FORCE_SIZE_T_LENGTH",
 		"AVX2"
 	}
 
@@ -336,6 +338,7 @@ project "OOPWithCppAVX512"
 	{
 		"GLM_FORCE_AVX2", -- GLM doesnt support AVX512 anymore so we use AVX2 instead though the compiler will still apply AVX512 optimizations
 		"GLM_FORCE_FMA",
+		"GLM_FORCE_SIZE_T_LENGTH",
 		"AVX2",
 		"AVX512"
 	}

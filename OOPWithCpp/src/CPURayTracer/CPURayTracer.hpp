@@ -28,14 +28,8 @@ namespace OWC
 
 	private:
 		std::shared_ptr<InterLayerData> m_InterLayerData = nullptr;
-		std::unique_ptr<ImageLoader> m_ImageLoader = nullptr;
-		std::unique_ptr<ImageLoader> m_SecondImageLoader = nullptr;
-		bool m_ToggleImage = false;
-		bool m_ImageStateUpdated = false;
-		bool m_ToggleSecondImage = false;
-		bool m_SecondImageStateUpdated = false;
+		bool m_RayTracingStateUpdated = false;
 		bool m_ToggleRaytracedImage = false;
-		bool m_ShowRaytracedImage = false;
 
 		std::unique_ptr<BaseScene> m_Scene;
 	};

@@ -6,25 +6,33 @@
 #include "BaseEvent.hpp"
 #include "WindowResize.hpp"
 
+#include <array>
+
 
 namespace OWC
 {
 	CPURayTracer::CPURayTracer(const std::shared_ptr<InterLayerData>& interLayerData)
 		: m_InterLayerData(interLayerData)
 	{
-		m_ImageLoader = std::make_unique<ImageLoader>("../cat.jpg");
-		m_SecondImageLoader = std::make_unique<ImageLoader>("../cat2.jpg");
 		m_Scene = BaseScene::CreateScene(Scene::Basic, m_InterLayerData->imageData);
 		m_InterLayerData->numberOfSamples = 1;
 	}
 
 	void CPURayTracer::OnUpdate()
 	{
-		if (m_ShowRaytracedImage && !m_ToggleRaytracedImage)
+		if (!m_ToggleRaytracedImage && m_RayTracingStateUpdated)
 		{
-			m_ImageStateUpdated = true;
+			m_InterLayerData->imageData.clear();
+			m_InterLayerData->imageHeight = 0;
+			m_InterLayerData->imageWidth = 0;
+			m_InterLayerData->ImageUpdates |= 0b10;
+			return;
 		}
-		else if (m_ShowRaytracedImage)
+
+		if (!m_ToggleRaytracedImage)
+			return;
+
+		if (m_ToggleRaytracedImage && m_RayTracingStateUpdated)
 		{
 			m_InterLayerData->imageData.clear();
 			m_InterLayerData->imageHeight = Application::GetConstInstance().GetWindowHeight();
@@ -34,74 +42,38 @@ namespace OWC
 			m_InterLayerData->ImageUpdates |= 0b10;
 		}
 
-		if (m_ToggleRaytracedImage)
+		if (bool updateImage = m_Scene->RenderNextPass(); updateImage)
 		{
-			// perform ray tracing and update m_InterLayerData->imageData accordingly
-			// (ray tracing logic not implemented in this snippet)
-			m_Scene->RenderNextPass();
 			m_InterLayerData->numberOfSamples++;
 			m_InterLayerData->ImageUpdates |= 0b01;
 		}
-
-		if (!(m_ImageStateUpdated || m_SecondImageStateUpdated))
-			return;
-
-		if (m_ToggleImage)
-		{
-			if (!m_ToggleSecondImage)
-			{
-				m_InterLayerData->imageData = m_ImageLoader->GetImageData();
-				m_InterLayerData->imageHeight = static_cast<uint32_t>(m_ImageLoader->GetHeight());
-				m_InterLayerData->imageWidth = static_cast<uint32_t>(m_ImageLoader->GetWidth());
-				m_InterLayerData->numberOfSamples = 1;
-			}
-			else if (m_ToggleSecondImage)
-			{
-				m_InterLayerData->imageData = m_SecondImageLoader->GetImageData();
-				m_InterLayerData->imageHeight = static_cast<uint32_t>(m_SecondImageLoader->GetHeight());
-				m_InterLayerData->imageWidth = static_cast<uint32_t>(m_SecondImageLoader->GetWidth());
-				m_InterLayerData->numberOfSamples = 1;
-			}
-
-			m_InterLayerData->ImageUpdates |= 0b01;
-
-			if (m_ImageStateUpdated)
-				m_InterLayerData->ImageUpdates |= 0b10;
-		}
-		else
-		{
-			m_InterLayerData->imageData.clear();
-			m_InterLayerData->imageHeight = 0;
-			m_InterLayerData->imageWidth = 0;
-			m_InterLayerData->ImageUpdates |= 0b10;
-		}
-
-		m_ImageStateUpdated = false;
-		m_SecondImageStateUpdated = false;
 	}
 
 	void CPURayTracer::ImGuiRender()
 	{
 		ImGui::Begin("CPU Ray Tracer");
 		ImGui::Text("CPU Ray Tracer Layer");
-		m_ImageStateUpdated = ImGui::Checkbox("toggle image", &m_ToggleImage);
-		if (m_ToggleImage)
+		m_RayTracingStateUpdated = ImGui::Checkbox("Toggle RayTracing", &m_ToggleRaytracedImage);
+		if (m_ToggleRaytracedImage)
 		{
-			m_SecondImageStateUpdated = ImGui::Checkbox("toggle second image", &m_ToggleSecondImage);
-			m_ShowRaytracedImage = ImGui::Checkbox("show raytraced image", &m_ToggleRaytracedImage);
+			ImGui::Text("number of samples %s", std::format("{}", m_InterLayerData->numberOfSamples).c_str());
 
-			if (m_SecondImageStateUpdated && m_ToggleRaytracedImage)
+			std::array<const char*, 2> sceneNames = { "Basic", "RandTest" };
+			static int currentSceneIndex = 0;
+			if (ImGui::Combo("Scene", &currentSceneIndex, sceneNames.data(), static_cast<int>(sceneNames.size())))
 			{
-				m_ToggleRaytracedImage = false;
-				m_ImageStateUpdated = true;
+				auto selectedScene = static_cast<Scene>(currentSceneIndex);
+				m_Scene = BaseScene::CreateScene(selectedScene, m_InterLayerData->imageData);
+				m_InterLayerData->numberOfSamples = 0;
+				m_InterLayerData->ImageUpdates |= 0b01;
+				for (auto& pixel : m_InterLayerData->imageData)
+					pixel = Vec4(0.0f);
 			}
-			if (m_ShowRaytracedImage && m_ToggleSecondImage)
-				m_ToggleSecondImage = false;
-
-			if (m_ToggleRaytracedImage)
-				ImGui::Text("number of samples %s", std::format("{}", m_InterLayerData->numberOfSamples).c_str());
 		}
 		ImGui::End();
+
+		if (m_ToggleRaytracedImage)
+			m_Scene->OnImGuiRender();
 	}
 
 	void CPURayTracer::OnEvent(class BaseEvent& e)
@@ -121,5 +93,8 @@ namespace OWC
 			this->m_InterLayerData->ImageUpdates |= 0b10;
 			return false;
 		});
+
+		if (m_ToggleRaytracedImage)
+			m_Scene->OnEvent(e);
 	}
 }

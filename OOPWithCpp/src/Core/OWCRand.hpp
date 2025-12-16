@@ -3,7 +3,6 @@
 
 #include <array>
 #include <immintrin.h>
-#include <glm/gtc/type_ptr.hpp>
 
 
 namespace OWC::Rand
@@ -18,10 +17,14 @@ namespace OWC::Rand
 		stats[2] = stats[1];
 		stats[1] = s;
 
-		temp ^= (temp << 22);
-		temp ^= (temp >> 16);
-		stats[0] = temp ^ s ^ (s >> 38);
-		Vec2 randFloats = Vec2(
+		// uses masks to maintain 32-bit values in each part of the uint64_t
+//		temp ^= (temp << 11) & 0b1111111111111111111110000000000011111111111111111111100000000000;
+//		temp ^= (temp >> 8) & 0b0000000011111111111111111111111100000000111111111111111111111111;
+//		stats[0] = temp ^ s ^ ((s >> 19) & 0b0000000000000000000111111111111100000000000000000001111111111111);
+		temp ^= (temp << 11);
+		temp ^= (temp >> 8);
+		stats[0] = temp ^ s ^ (s >> 19);
+		Vec2 randFloats(
 			static_cast<float>(stats[0] & 0xFFFFFFFF) * (1.0f / static_cast<float>(std::numeric_limits<uint32_t>::max())),
 			static_cast<float>((stats[0] >> 32) & 0xFFFFFFFF) * (1.0f / static_cast<float>(std::numeric_limits<uint32_t>::max()))
 		);
