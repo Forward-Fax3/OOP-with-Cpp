@@ -60,4 +60,14 @@ namespace OWC::Rand
 		Vec4 randFloats = glm::vec4(states[0]) * (1.0f / static_cast<float>(std::numeric_limits<uint32_t>::max()));
 		return min + (max - min) * randFloats;
 	}
+
+	OWC_FORCE_INLINE Vec3 LinearFastRandVec3(const Vec3& min, const Vec3& max)
+	{
+		return LinearFastRandVec4(Vec4(min, 0.0f), Vec4(max, 0.0f)); // implicit conversion
+	}
+
+	OWC_FORCE_INLINE Vec3 FastUnitVecctor()
+	{
+		return glm::normalize(LinearFastRandVec3(Vec3(-1.0), Vec3(1.0)));
+	}
 }

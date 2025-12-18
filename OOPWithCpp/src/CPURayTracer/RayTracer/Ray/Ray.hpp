@@ -14,7 +14,7 @@ namespace OWC
 		Vec3 GetOrigin() const { return m_Origin; }
 		Vec3 GetDirection() const { return m_Direction; }
 
-		Vec3 GetAtTime(float t) const { return m_Origin + t * m_Direction; }
+		Vec3 GetPointAtDistance(float t) const { return m_Origin + t * m_Direction; }
 
 	private:
 		Vec3 m_Origin = Vec3(0.0);

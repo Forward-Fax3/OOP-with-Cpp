@@ -17,10 +17,10 @@ namespace OWC
 	RandTestScene::RandTestScene(std::vector<glm::vec4>& frameBuffer)
 		: BaseScene(frameBuffer) {}
 
-	bool RandTestScene::RenderNextPass()
+	RenderPassReturnData RandTestScene::RenderNextPass()
 	{
 		if (!m_UpdateImage)
-			return false;
+			return { false, false };
 
 		m_CurrentSampleIndex++;
 		auto& frameBuffer = GetFrameBuffer();
@@ -97,7 +97,7 @@ namespace OWC
 			}
 		}
 
-		return true;
+		return { true, false };
 	}
 
 	void RandTestScene::OnImGuiRender()

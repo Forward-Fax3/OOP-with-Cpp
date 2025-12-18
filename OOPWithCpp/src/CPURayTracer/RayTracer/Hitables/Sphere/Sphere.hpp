@@ -4,6 +4,8 @@
 
 #include <glm/vec3.hpp>
 
+#include <memory>
+
 
 namespace OWC
 {
@@ -11,7 +13,7 @@ namespace OWC
 	{
 	public:
 		Sphere() = delete;
-		inline Sphere(const glm::vec3& center, float radius) : m_Center(center), m_Radius(radius) {}
+		OWC_FORCE_INLINE Sphere(const glm::vec3& center, float radius, const std::shared_ptr<BaseMaterial>& mat) : m_Center(center), m_Material(mat), m_Radius(radius) {}
 		~Sphere() override = default;
 
 		Sphere(const Sphere&) = delete;
@@ -19,10 +21,11 @@ namespace OWC
 		Sphere(Sphere&&) = delete;
 		Sphere& operator=(Sphere&&) = delete;
 
-		virtual HitData IsHit(const Ray& ray) const override;
+		HitData IsHit(const Ray& ray) const override;
 
 	private:
 		glm::vec3 m_Center;
+		std::shared_ptr<BaseMaterial> m_Material;
 		float m_Radius;
 	};
 }

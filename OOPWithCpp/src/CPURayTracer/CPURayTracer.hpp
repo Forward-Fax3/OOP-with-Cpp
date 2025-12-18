@@ -45,6 +45,10 @@ namespace OWC
 		bool m_RayTracingStateUpdated = false;
 		bool m_ToggleRaytracedImage = false;
 
+		int	m_CurrentSceneIndex = 0;
+		int	m_CurrentGammaIndex = 3; // Default to Gamma 2.2
+		float m_CustomGammaValue = 2.2f;
+
 		std::unique_ptr<BaseScene> m_Scene;
 	};
 }

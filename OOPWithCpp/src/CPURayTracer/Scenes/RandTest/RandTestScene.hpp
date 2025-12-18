@@ -24,7 +24,7 @@ namespace OWC
         RandTestScene(RandTestScene&&) = delete;
         RandTestScene& operator=(RandTestScene&&) = delete;
 
-		bool RenderNextPass() override;
+        RenderPassReturnData RenderNextPass() override;
 
 		void OnImGuiRender() override;
         bool OnEvent(BaseEvent& event) override;

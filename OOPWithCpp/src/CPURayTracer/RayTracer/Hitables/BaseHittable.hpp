@@ -1,14 +1,32 @@
 ﻿#pragma once
+#define BaseHittable_HPP
 #include "Ray.hpp"
+
+#include "glm/glm.hpp"
+
+#ifndef BASEMATERIAL_HPP
+#include "BaseMaterial.hpp"
+#endif // !BASEMATERIAL_HPP
 
 
 namespace OWC
 {
+	class BaseMaterial;
+
 	struct HitData
 	{
+		Vec3 normal;
+		Vec3 point;
+		BaseMaterial* material;
 		float t;
 		bool frontFace;
 		bool hasHit;
+
+		OWC_FORCE_INLINE void SetFaceNormal(const Ray& ray, const Vec3& outwardNormal)
+		{
+			frontFace = glm::dot(ray.GetDirection(), outwardNormal) < 0.0f;
+			normal = frontFace ? outwardNormal : -outwardNormal;
+		}
 	};
 
 	class BaseHittable

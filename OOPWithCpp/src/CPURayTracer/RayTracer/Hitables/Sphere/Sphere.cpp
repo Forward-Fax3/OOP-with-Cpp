@@ -17,21 +17,33 @@ namespace OWC
 		float c = glm::length2(oc) - m_Radius * m_Radius;
 
 		float discriminant = h * h - a * c;
-		if (discriminant < 0.0f)
+		if (discriminant <= 0.0f)
 		{
 			hitData.hasHit = false;
 			return hitData;
 		}
 
-		// for now only test if there is a hit, not where
-		hitData.hasHit = true;
-		return hitData;
+		float sqrtDiscriminant = glm::sqrt(discriminant);
 
-//		float sqrtDiscriminant = glm::sqrt(discriminant);
-//		float t1 = (-b - sqrtDiscriminant) / (2.0f * a);
-//		float t2 = (-b + sqrtDiscriminant) / (2.0f * a);
-//		hitData.t = (t1 >= 0.0f) ? t1 : ((t2 >= 0.0f) ? t2 : -1.0f);
-//		hitData.hasHit = (hitData.t >= 0.0f);
-//		return hitData;
+		float root = (-h - sqrtDiscriminant) / a;
+		if (root < 0.001f)
+		{
+			root = (-h + sqrtDiscriminant) / a;
+			if (root < 0.001f)
+			{
+				hitData.hasHit = false;
+				return hitData;
+			}
+		}
+
+		hitData.hasHit = true;
+		hitData.t = root;
+		hitData.point = ray.GetPointAtDistance(hitData.t);
+		hitData.material = m_Material.get();
+
+		Vec3 normal = (hitData.point - m_Center) / m_Radius;
+		hitData.SetFaceNormal(ray, normal);
+
+		return hitData;
 	}
 }

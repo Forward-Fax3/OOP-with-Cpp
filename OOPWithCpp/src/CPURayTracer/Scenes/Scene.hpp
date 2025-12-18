@@ -15,6 +15,12 @@ namespace OWC
 		RandTest, // A scene that fills the framebuffer with random colors
 	};
 
+	struct RenderPassReturnData
+	{
+		bool frameBufferUpdated = false;
+		bool frameNeedsReset = false;
+	};
+
 	class BaseScene
 	{
 	public:
@@ -26,7 +32,7 @@ namespace OWC
 		BaseScene(BaseScene&&) = delete;
 		BaseScene& operator=(BaseScene&&) = delete;
 
-		virtual bool RenderNextPass() = 0;
+		virtual RenderPassReturnData RenderNextPass() = 0;
 
 		virtual void OnImGuiRender() { /* default empty implementation */ }
 		virtual bool OnEvent(BaseEvent&) { return false; /* default empty implementation */ }

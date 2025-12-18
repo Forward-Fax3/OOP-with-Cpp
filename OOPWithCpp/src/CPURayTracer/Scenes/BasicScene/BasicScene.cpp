@@ -4,9 +4,15 @@
 #include "Ray.hpp"
 #include "OWCRand.hpp"
 
+#include "BaseEvent.hpp"
+#include "WindowResize.hpp"
+
+#include "Lambertian.hpp"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/random.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 namespace OWC
@@ -14,91 +20,73 @@ namespace OWC
 	BasicScene::BasicScene(std::vector<glm::vec4>& frameBuffer)
 		: BaseScene(frameBuffer)
 	{
-		m_Hittables = std::make_unique<Sphere>(glm::vec3(0.0f, 0.0f, -5.0f), 1.0f);
+		m_Hittables = std::make_shared<Sphere>(glm::vec3(0.0f), 1.0f,
+			std::make_shared<Lambertian>(Colour(1.0f, 0.0f, 0.0f, 1.0))
+		);
+
+		m_Camera = std::make_unique<RTCamera>(m_Hittables, frameBuffer);
+		m_Camera->SetPosition(m_CameraPosition);
+		m_Camera->SetRotate(m_CameraRotation);
+		m_Camera->SetFOV(m_FOV);
+		m_Camera->SetFocalLength(m_FocalLength);
 	}
 
-	bool BasicScene::RenderNextPass()
+	RenderPassReturnData BasicScene::RenderNextPass()
 	{
-		const auto& app = Application::GetConstInstance();
-		auto windowWidth = app.GetWindowWidth();
-		auto windowHeight = app.GetWindowHeight();
-		auto halfWidth = static_cast<float>(windowWidth) * 0.5f;
-		auto halfHeight = static_cast<float>(windowHeight) * 0.5f;
-		Vec2 halfScreenSize{ halfWidth, halfHeight };
-		Vec2 invHalfScreenSize = 1.0f / halfScreenSize;
-		Vec4 halfScreenSize_128 = glm::xyxy(halfScreenSize);
-		Vec4 invHalfScreenSize_128 = glm::xyxy(invHalfScreenSize);
+		static bool imageWasClearedLastPass = false;
 
-		std::vector<Vec4>& frameBuffer = GetFrameBuffer();
-		size_t i = 0;
-
-		for (; i < frameBuffer.size(); i += 2)
+		if (m_ImageNeedsClearing && imageWasClearedLastPass)
 		{
-			Vec4 pixelCoord {
-				static_cast<float>(i % windowWidth),
-				static_cast<float>(i / windowWidth),
-				static_cast<float>((i + 1) % windowWidth),
-				static_cast<float>((i + 1) / windowWidth)
-			};
-			pixelCoord += Rand::LinearFastRandVec4(Vec4(0.0f), Vec4(1.0f));
-			pixelCoord -= halfScreenSize_128;
-			pixelCoord *= invHalfScreenSize_128;
-			// create Ray
-			Ray ray {
-				Vec3(0.0f),
-				glm::normalize(Vec3(
-					glm::xy(pixelCoord),
-					-1.0f))
-			};
-
-			// check for hits with m_Hittables
-			HitData hitData = m_Hittables->IsHit(ray);
-			if (hitData.hasHit)
-				frameBuffer[i] += Vec4(1.0f, 0.0f, 0.0f, 1.0f); // red color for hit
-			else
-				frameBuffer[i] += Vec4(0.0f, 0.0f, 0.0f, 1.0f); // black color for miss
-
-			ray = Ray(
-				Vec3(0.0f),
-				glm::normalize(Vec3(
-					glm::zw(pixelCoord),
-					-1.0
-				))
-			);
-
-			hitData = m_Hittables->IsHit(ray);
-			if (hitData.hasHit)
-				frameBuffer[i+1] += Vec4(1.0f, 0.0f, 0.0f, 1.0f); // red color for hit
-			else
-				frameBuffer[i+1] += Vec4(0.0f, 0.0f, 0.0f, 1.0f); // black color for miss
+			m_ImageNeedsClearing = false;
+			imageWasClearedLastPass = false;
+		}
+		else if (m_ImageNeedsClearing && !imageWasClearedLastPass)
+		{
+			imageWasClearedLastPass = true;
+			return { true, true };
 		}
 
-		i -= 1;
-		for (; i < frameBuffer.size(); i += 1)
+		m_Camera->SingleThreadedRenderPass();
+
+		return { true, false };
+	}
+
+	void BasicScene::OnImGuiRender()
+	{
+		ImGui::Begin("Camera Settings");
+		if (ImGui::DragFloat3("Position", glm::value_ptr(m_CameraPosition), 0.1f))
 		{
-			Vec2 pixelCoord{
-				static_cast<float>(i % windowWidth),
-				static_cast<float>(i / windowWidth)
-			};
-			pixelCoord += Rand::LinearFastRandVec2(Vec2(0.0f), Vec2(1.0f));
-			pixelCoord -= halfScreenSize;
-			pixelCoord *= invHalfScreenSize;
-			// create Ray
-			Ray ray{
-				Vec3(0.0f),
-				glm::normalize(Vec3(
-					pixelCoord,
-					-1.0f))
-			};
-
-			// check for hits with m_Hittables
-			HitData hitData = m_Hittables->IsHit(ray);
-			if (hitData.hasHit)
-				frameBuffer[i] += Vec4(1.0f, 0.0f, 0.0f, 1.0f); // red color for hit
-			else
-				frameBuffer[i] += Vec4(0.0f, 0.0f, 0.0f, 1.0f); // black color for miss
+			m_ImageNeedsClearing = true;
+			m_Camera->SetPosition(m_CameraPosition);
 		}
+		if (ImGui::DragFloat3("Rotation", glm::value_ptr(m_CameraRotation), 0.1f))
+		{
+			m_ImageNeedsClearing = true;
+			m_Camera->SetRotate(m_CameraRotation);
+		}
+		if (ImGui::DragFloat("FOV", &m_FOV, 0.1f, 1.0f, 89.0f))
+		{
+			m_ImageNeedsClearing = true;
+			m_Camera->SetFOV(m_FOV);
+		}
+		if (ImGui::DragFloat("Focal Length", &m_FocalLength, 0.1f, 0.1f, 100.0f))
+		{
+			m_ImageNeedsClearing = true;
+			m_Camera->SetFocalLength(m_FocalLength);
+		}
+		ImGui::End();
+	}
 
-		return true;
+	bool BasicScene::OnEvent(BaseEvent& e)
+	{
+		EventDispatcher dispacher(e);
+
+		dispacher.Dispatch<WindowResize>([this](const WindowResize&) {
+			const auto& app = Application::GetConstInstance();
+			this->m_Camera->SetScreenSize(Vec2(app.GetWindowWidth(), app.GetWindowHeight()));
+			return false;
+			});
+
+		return false;
 	}
 }

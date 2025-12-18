@@ -42,9 +42,18 @@ namespace OWC
 			m_InterLayerData->ImageUpdates |= 0b10;
 		}
 
-		if (bool updateImage = m_Scene->RenderNextPass(); updateImage)
+		if (RenderPassReturnData updateImage = m_Scene->RenderNextPass(); updateImage.frameBufferUpdated)
 		{
-			m_InterLayerData->numberOfSamples++;
+			if (updateImage.frameNeedsReset)
+			{
+				for (auto& pixel : m_InterLayerData->imageData)
+					pixel = Vec4(0.0f);
+				m_InterLayerData->numberOfSamples = 0;
+			}
+			else
+			{
+				m_InterLayerData->numberOfSamples++;
+			}
 			m_InterLayerData->ImageUpdates |= 0b01;
 		}
 	}
@@ -69,9 +78,9 @@ namespace OWC
 			ImGui::Text("number of samples %s", std::format("{}", m_InterLayerData->numberOfSamples).c_str());
 
 			std::array<const char*, 2> sceneNames = { "Basic", "RandTest" };
-			if (static int currentSceneIndex = 0; ImGui::Combo("Scene", &currentSceneIndex, sceneNames.data(), static_cast<int>(sceneNames.size())))
+			if (ImGui::Combo("Scene", &m_CurrentSceneIndex, sceneNames.data(), static_cast<int>(sceneNames.size())))
 			{
-				auto selectedScene = static_cast<Scene>(currentSceneIndex);
+				auto selectedScene = static_cast<Scene>(m_CurrentSceneIndex);
 				m_Scene = BaseScene::CreateScene(selectedScene, m_InterLayerData->imageData);
 				m_InterLayerData->numberOfSamples = 0;
 				m_InterLayerData->ImageUpdates |= 0b01;
@@ -79,16 +88,14 @@ namespace OWC
 					pixel = Vec4(0.0f);
 			}
 
-			static int currentGammaIndex = 3; // Default to Gamma 2.2
-			static float customGammaValue = 2.2f;
-			if (ImGui::Combo("Gamma Correction", &currentGammaIndex, gammaCorrectionNames.data(), static_cast<int>(gammaCorrectionNames.size())))
+			if (ImGui::Combo("Gamma Correction", &m_CurrentGammaIndex, gammaCorrectionNames.data(), static_cast<int>(gammaCorrectionNames.size())))
 			{
-				auto gamma = static_cast<GammaCorrection>(currentGammaIndex);
+				auto gamma = static_cast<GammaCorrection>(m_CurrentGammaIndex);
 				if (gamma != GammaCorrection::custom)
 					UpdateGammaValue(gamma);
 			}
-			if (static_cast<GammaCorrection>(currentGammaIndex) == GammaCorrection::custom && ImGui::InputFloat("Custom Gamma Value", &customGammaValue))
-				m_InterLayerData->invGammaValue = 1.0f / customGammaValue;
+			if (static_cast<GammaCorrection>(m_CurrentGammaIndex) == GammaCorrection::custom && ImGui::InputFloat("Custom Gamma Value", &m_CustomGammaValue))
+				m_InterLayerData->invGammaValue = 1.0f / m_CustomGammaValue;
 		}
 		ImGui::End();
 
