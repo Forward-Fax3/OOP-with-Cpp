@@ -97,6 +97,8 @@ namespace OWC
 				auto gamma = static_cast<GammaCorrection>(m_CurrentGammaIndex);
 				if (gamma != GammaCorrection::custom)
 					UpdateGammaValue(gamma);
+				else 
+					m_InterLayerData->invGammaValue = 1.0f / m_CustomGammaValue;
 			}
 			if (static_cast<GammaCorrection>(m_CurrentGammaIndex) == GammaCorrection::custom && ImGui::InputFloat("Custom Gamma Value", &m_CustomGammaValue))
 				m_InterLayerData->invGammaValue = 1.0f / m_CustomGammaValue;
@@ -150,8 +152,6 @@ namespace OWC
 			m_InterLayerData->invGammaValue = 1.0f / 2.4f;
 			break;
 		case GammaCorrection::custom:
-			// Keep current value
-			break;
 		default:
 			std::unreachable();
 		}
