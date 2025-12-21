@@ -39,8 +39,8 @@ namespace OWC
 		{
 			WindowRestore restoreEvent;
 			m_Callback(restoreEvent);
-		}
 			break;
+		}
 		case SDL_EVENT_USER:
 			//m_Callback();
 			break;

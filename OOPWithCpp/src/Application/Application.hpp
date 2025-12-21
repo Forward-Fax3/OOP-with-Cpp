@@ -40,8 +40,8 @@ namespace OWC
 
 		inline Window& GetWindow() const { return *m_Window; }
 
-		inline int GetWindowWidth() const { return m_Window->GetWidth(); }
-		inline int GetWindowHeight() const { return m_Window->GetHeight(); }
+		inline i32 GetWindowWidth() const { return m_Window->GetWidth(); }
+		inline i32 GetWindowHeight() const { return m_Window->GetHeight(); }
 
 	private:
 		void OnEvent(BaseEvent& event) const;

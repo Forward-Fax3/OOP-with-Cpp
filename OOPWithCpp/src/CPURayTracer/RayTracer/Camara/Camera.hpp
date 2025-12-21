@@ -17,18 +17,18 @@ namespace OWC
 		OWC_FORCE_INLINE void SetRotate(const Vec3& eulerAngles) { m_Rotation = eulerAngles; m_PositionNeedsUpdating = true; }
 		OWC_FORCE_INLINE void SetPosition(const Vec3& position) { m_Position = position; m_PositionNeedsUpdating = true; }
 		OWC_FORCE_INLINE void SetScreenSize(const Vec2& size) { m_ScreenSize = size; m_PositionNeedsUpdating = true; }
-		OWC_FORCE_INLINE void SetFOV(const float fov) { m_FOV = fov; m_PositionNeedsUpdating = true; }
+		OWC_FORCE_INLINE void SetFOV(const f32 fov) { m_FOV = fov; m_PositionNeedsUpdating = true; }
 		OWC_FORCE_INLINE void SetVup(const Vec3& vup) { m_Vup = vup; m_PositionNeedsUpdating = true; }
-		OWC_FORCE_INLINE void SetFocalLength(const float focalLength) { m_FocalLength = focalLength; m_PositionNeedsUpdating = true; }
+		OWC_FORCE_INLINE void SetFocalLength(const f32 focalLength) { m_FocalLength = focalLength; m_PositionNeedsUpdating = true; }
 
-		OWC_FORCE_INLINE void SetNumberOfSamplesPerPass(const size_t samples) { m_NumberOfSamplesPerPass = samples; }
+		OWC_FORCE_INLINE void SetNumberOfSamplesPerPass(const uSize samples) { m_NumberOfSamplesPerPass = samples; }
 
 		void SingleThreadedRenderPass();
 //		void MultiThreadedRenderPass();
 
 	private:
 		void CreateViewMatrix();
-		Ray CreateRay(size_t i, size_t j) const;
+		Ray CreateRay(uSize i, uSize j) const;
 
 		Colour RayColour(Ray ray);
 
@@ -40,13 +40,13 @@ namespace OWC
 		Vec3 m_PixelDeltaV{};
 		Point m_Pixel100Location{};
 		Vec2 m_ScreenSize{};
-		float m_FocalLength = 5.0f;
-		float m_FOV = 30.0f;
+		f32 m_FocalLength = 5.0f;
+		f32 m_FOV = 30.0f;
 
 		bool m_PositionNeedsUpdating = false;
 
-		size_t m_NumberOfSamplesPerPass = 1;
-		size_t m_MaxBounces = 5;
+		uSize m_NumberOfSamplesPerPass = 1;
+		uSize m_MaxBounces = 5;
 
 		std::vector<Colour>& m_Pixels;
 		std::vector<Colour> m_BouncedColours;

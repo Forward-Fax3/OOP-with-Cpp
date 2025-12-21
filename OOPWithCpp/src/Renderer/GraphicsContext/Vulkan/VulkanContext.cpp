@@ -3,6 +3,8 @@
 #include <mutex>
 #include <map>
 
+#include "Core.hpp"
+
 #include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_to_string.hpp>
 #include <SDL3/SDL_vulkan.h>
@@ -62,7 +64,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugMessageFunc( // TODO: add objects i
 {
 	static std::mutex s_Mutex;
 	static std::vector<std::string> s_MessagesLogged;
-	static int32_t lastMessageID = std::numeric_limits<int32_t>::max();
+	static OWC::i32 lastMessageID = std::numeric_limits<OWC::i32>::max();
 	static vk::DebugUtilsMessageSeverityFlagBitsEXT lastMessageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT();
 	static bool firstMessage = true;
 
@@ -75,7 +77,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugMessageFunc( // TODO: add objects i
 
 		PrintVulkanDebugMessages(lastMessageSeverity, s_MessagesLogged);
 		s_MessagesLogged.clear();
-		lastMessageID = std::numeric_limits<int32_t>::max();
+		lastMessageID = std::numeric_limits<OWC::i32>::max();
 		lastMessageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT();
 		firstMessage = true;
 		return vk::False;
@@ -91,7 +93,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugMessageFunc( // TODO: add objects i
 	if (pCallbackData->queueLabelCount > 0)
 	{
 		str += "\n\t Queue Labels:";
-		for (uint32_t i = 0; i < pCallbackData->queueLabelCount; i++)
+		for (OWC::u32 i = 0; i < pCallbackData->queueLabelCount; i++)
 		{
 			str += std::format("\n\t\t labelName = <{}>",
 				pCallbackData->pQueueLabels[i].pLabelName ? pCallbackData->pQueueLabels[i].pLabelName : "NULL");
@@ -100,7 +102,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugMessageFunc( // TODO: add objects i
 	if (pCallbackData->cmdBufLabelCount > 0)
 	{
 		str += "\n\t CommandBuffer Labels:";
-		for (uint32_t i = 0; i < pCallbackData->cmdBufLabelCount; i++)
+		for (OWC::u32 i = 0; i < pCallbackData->cmdBufLabelCount; i++)
 		{
 			str += std::format("\n\t\t labelName = <{}>",
 				pCallbackData->pCmdBufLabels[i].pLabelName ? pCallbackData->pCmdBufLabels[i].pLabelName : "NULL");
@@ -109,7 +111,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugMessageFunc( // TODO: add objects i
 //	if (pCallbackData->objectCount > 0 /* && !std::string("NULL").compare(pCallbackData->pObjects[0].pObjectName) */)
 //	{
 //		str += "\n\t Objects:";
-//		for (uint32_t i = 0; i < pCallbackData->objectCount; i++)
+//		for (u32 i = 0; i < pCallbackData->objectCount; i++)
 //		{
 //			str += std::format(
 //				"\n\t\t objectName = <{}>"
@@ -150,7 +152,7 @@ static VKAPI_ATTR vk::Bool32 VKAPI_CALL debugMessageFunc( // TODO: add objects i
 			// flush immediately on error messages
 			PrintVulkanDebugMessages(messageSeverity, s_MessagesLogged);
 			s_MessagesLogged.clear();
-			lastMessageID = std::numeric_limits<int32_t>::max();
+			lastMessageID = std::numeric_limits<OWC::i32>::max();
 			lastMessageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT();
 			firstMessage = true;
 		}
@@ -281,7 +283,7 @@ namespace OWC::Graphics
 
 			vkCore.GetGraphicsQueue().submit(submitInfo, VK_NULL_HANDLE);
 
-			auto indices = static_cast<uint32_t>(vkCore.GetCurrentFrameIndex());
+			auto indices = static_cast<u32>(vkCore.GetCurrentFrameIndex());
 			auto result = VulkanCore::GetConstInstance().GetPresentQueue().presentKHR(
 				vk::PresentInfoKHR()
 				.setSwapchains(vkCore.GetSwapchain())
@@ -292,7 +294,7 @@ namespace OWC::Graphics
 
 			(void)result;
 
-//			size_t retryCount = 0;
+//			uSize retryCount = 0;
 //			while (result == vk::Result::eSuboptimalKHR || result == vk::Result::eErrorOutOfDateKHR)
 //			{
 //				if (retryCount++ >= 3)
@@ -326,7 +328,7 @@ namespace OWC::Graphics
 
 		vkCore.SetCurrentFrameIndex(result.value);
 
-//		size_t retryCount = 0;
+//		uSize retryCount = 0;
 //
 //		while (result == vk::Result::eSuboptimalKHR || result == vk::Result::eErrorOutOfDateKHR)
 //		{
@@ -373,15 +375,15 @@ namespace OWC::Graphics
 	{
 		std::vector<const char*> extentions;
 		{
-			uint32_t numberOfSDLExtensions = 0;
+			u32 numberOfSDLExtensions = 0;
 			const auto extentionsTemp = SDL_Vulkan_GetInstanceExtensions(&numberOfSDLExtensions);
 
 			if constexpr (!IsDistributionMode()) // +3 for debug utils and get physical device properties 2 and surface extensions
-				extentions.reserve(static_cast<size_t>(numberOfSDLExtensions) + 3);
+				extentions.reserve(static_cast<uSize>(numberOfSDLExtensions) + 3);
 			else // +2 for get physical device properties 2 and surface extensions
-				extentions.reserve(static_cast<size_t>(numberOfSDLExtensions) + 2);
+				extentions.reserve(static_cast<uSize>(numberOfSDLExtensions) + 2);
 
-			for (size_t i = 0; i < numberOfSDLExtensions; i++)
+			for (uSize i = 0; i < numberOfSDLExtensions; i++)
 				extentions.emplace_back(extentionsTemp[i]);
 		}
 
@@ -397,7 +399,7 @@ namespace OWC::Graphics
 				extentions.emplace_back(vk::EXTDebugUtilsExtensionName);
 
 				validationLayers.push_back("VK_LAYER_KHRONOS_validation");
-				createInfo.setEnabledLayerCount(static_cast<uint32_t>(validationLayers.size()));
+				createInfo.setEnabledLayerCount(static_cast<u32>(validationLayers.size()));
 				createInfo.setPpEnabledLayerNames(validationLayers.data());
 		}
 
@@ -414,7 +416,7 @@ namespace OWC::Graphics
 			.setApiVersion(g_VulkanVersion);
 
 		createInfo
-			.setEnabledExtensionCount(static_cast<uint32_t>(extentions.size()))
+			.setEnabledExtensionCount(static_cast<u32>(extentions.size()))
 			.setPpEnabledExtensionNames(extentions.data())
 			.setPApplicationInfo(&appInfo);
 
@@ -458,7 +460,7 @@ namespace OWC::Graphics
 		if (physicalDevices.empty())
 			Log<LogLevel::Critical>("Failed to find GPUs with Vulkan support");
 
-		uint32_t highestScore = 0;
+		u32 highestScore = 0;
 		for (const auto& device : physicalDevices)
 		{
 			auto [isSuitable, score] = IsPhysicalDeviceSuitable(device);
@@ -483,9 +485,9 @@ namespace OWC::Graphics
 		}
 	}
 
-	std::pair<bool, uint32_t> VulkanContext::IsPhysicalDeviceSuitable(const vk::PhysicalDevice& device)
+	std::pair<bool, u32> VulkanContext::IsPhysicalDeviceSuitable(const vk::PhysicalDevice& device)
 	{
-		uint32_t score = 0;
+		u32 score = 0;
 		auto deviceProperties = device.getProperties2();
 		auto supportedExtensions = device.enumerateDeviceExtensionProperties();
 
@@ -509,9 +511,9 @@ namespace OWC::Graphics
 	void VulkanContext::FindQueueFamilies()
 	{
 		auto queueFamilies = VulkanCore::GetConstInstance().GetPhysicalDev().getQueueFamilyProperties();
-		constexpr uint32_t indexMax = std::numeric_limits<uint32_t>::max();
+		constexpr u32 indexMax = std::numeric_limits<u32>::max();
 
-		for (uint32_t i = 0; i < static_cast<uint32_t>(queueFamilies.size()); i++) // try to find all queue families in one loop and have different queue families if possible
+		for (u32 i = 0; i < static_cast<u32>(queueFamilies.size()); i++) // try to find all queue families in one loop and have different queue families if possible
 		{
 			if (m_QueueFamilyIndices.PresentFamily == indexMax &&
 				VulkanCore::GetConstInstance().GetPhysicalDev().getSurfaceSupportKHR(i, VulkanCore::GetConstInstance().GetSurface()))
@@ -546,7 +548,7 @@ namespace OWC::Graphics
 
 	void VulkanContext::CheckQueueFamilyValidity(const std::vector<vk::QueueFamilyProperties> queueFamilies)
 	{
-		constexpr uint32_t indexMax = std::numeric_limits<uint32_t>::max();
+		constexpr u32 indexMax = std::numeric_limits<u32>::max();
 
 		if (m_QueueFamilyIndices.PresentFamily == indexMax)
 			Log<LogLevel::Critical>("Failed to find a valid present queue family index");
@@ -556,7 +558,7 @@ namespace OWC::Graphics
 		{
 			Log<LogLevel::Warn>("Failed to find a unique compute queue family index, any compute queue will be searched for now");
 
-			for (uint32_t i = 0; i < static_cast<uint32_t>(queueFamilies.size()); i++)
+			for (u32 i = 0; i < static_cast<u32>(queueFamilies.size()); i++)
 				if ((queueFamilies[i].queueFlags & vk::QueueFlagBits::eCompute) == vk::QueueFlagBits::eCompute)
 				{
 					m_QueueFamilyIndices.ComputeFamily = i;
@@ -570,7 +572,7 @@ namespace OWC::Graphics
 		{
 			Log<LogLevel::Trace>("Failed to find a unique transfer queue family index, any transfer queue will be searched for now");
 
-			for (uint32_t i = 0; i < static_cast<uint32_t>(queueFamilies.size()); i++)
+			for (u32 i = 0; i < static_cast<u32>(queueFamilies.size()); i++)
 				if ((queueFamilies[i].queueFlags & vk::QueueFlagBits::eTransfer) == vk::QueueFlagBits::eTransfer)
 				{
 					m_QueueFamilyIndices.TransferFamily = i;
@@ -588,9 +590,9 @@ namespace OWC::Graphics
 
 	void VulkanContext::GetAndStoreGlobalQueueFamilies() const
 	{
-		std::map<uint32_t, uint32_t> queueFamilyUsageCount;
+		std::map<u32, u32> queueFamilyUsageCount;
 
-		auto l_getQueue = [&](uint32_t familyIndex) -> vk::Queue {
+		auto l_getQueue = [&](u32 familyIndex) -> vk::Queue {
 			if (!queueFamilyUsageCount.contains(familyIndex))
 				queueFamilyUsageCount[familyIndex] = 0;
 
@@ -611,7 +613,7 @@ namespace OWC::Graphics
 
 	void VulkanContext::CreateLogicalDevice()
 	{
-		std::map<uint32_t, std::pair<uint32_t, std::vector<float>>> uniqueQueueFamiliesMap;
+		std::map<u32, std::pair<u32, std::vector<f32>>> uniqueQueueFamiliesMap;
 
 		for (const auto& index : { m_QueueFamilyIndices.GraphicsFamily, m_QueueFamilyIndices.ComputeFamily, m_QueueFamilyIndices.TransferFamily })
 		{
@@ -770,7 +772,7 @@ namespace OWC::Graphics
 		if (m_QueueFamilyIndices.uniqueIndices.size() > 1)
 			swapchainCreateInfo
 				.setImageSharingMode(vk::SharingMode::eConcurrent)
-				.setQueueFamilyIndexCount(static_cast<uint32_t>(m_QueueFamilyIndices.uniqueIndices.size()))
+				.setQueueFamilyIndexCount(static_cast<u32>(m_QueueFamilyIndices.uniqueIndices.size()))
 				.setPQueueFamilyIndices(m_QueueFamilyIndices.uniqueIndices.data());
 
 		VulkanCore::GetInstance().SetSwapchain(vkCore.GetDevice().createSwapchainKHR(swapchainCreateInfo));
@@ -864,14 +866,14 @@ namespace OWC::Graphics
 		m_BeginRenderCmdBuf = vkCore.GetGraphicsCommandBuffer();
 		m_EndRenderCmdBuf = vkCore.GetGraphicsCommandBuffer();
 
-		vk::ClearValue clearColour(vk::ClearColorValue(std::array<float, 4>{0.0, 0.0, 0.0, 1.0}));
+		vk::ClearValue clearColour(vk::ClearColorValue(std::array<f32, 4>{0.0, 0.0, 0.0, 1.0}));
 
 		auto windowSizeExtent = vkCore.GetPhysicalDev().getSurfaceCapabilitiesKHR(vkCore.GetSurface()).currentExtent;
 		vk::Rect2D rect(vk::Offset2D(0, 0),
 			windowSizeExtent
 		);
 
-		for (size_t i = 0; i != vkCore.GetSwapchainImageViews().size(); i++)
+		for (uSize i = 0; i != vkCore.GetSwapchainImageViews().size(); i++)
 		{
 			const auto& cmdBuf = m_BeginRenderCmdBuf[i];
 
@@ -908,13 +910,13 @@ namespace OWC::Graphics
 				)
 			);
 
-			cmdBuf.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<float>(windowSizeExtent.width), static_cast<float>(windowSizeExtent.height)));
+			cmdBuf.setViewport(0, vk::Viewport(0.0f, 0.0f, static_cast<f32>(windowSizeExtent.width), static_cast<f32>(windowSizeExtent.height)));
 			cmdBuf.setScissor(0, rect);
 			cmdBuf.endRendering();
 			cmdBuf.end();
 		}
 
-		for (size_t i = 0; i != vkCore.GetSwapchainImageViews().size(); i++)
+		for (uSize i = 0; i != vkCore.GetSwapchainImageViews().size(); i++)
 		{
 			const auto& cmdBuf = m_EndRenderCmdBuf[i];
 			cmdBuf.begin(vk::CommandBufferBeginInfo());
@@ -1026,8 +1028,8 @@ namespace OWC::Graphics
 		init_info.DescriptorPool = vkCore.GetImGuiDescriptorPool();
 		init_info.UseDynamicRendering = true;
 		init_info.MinAllocationSize = 1024 * 1024;
-		init_info.MinImageCount = static_cast<uint32_t>(vkCore.GetSwapchainImages().size());
-		init_info.ImageCount = static_cast<uint32_t>(vkCore.GetSwapchainImages().size());
+		init_info.MinImageCount = static_cast<u32>(vkCore.GetSwapchainImages().size());
+		init_info.ImageCount = static_cast<u32>(vkCore.GetSwapchainImages().size());
 		init_info.Allocator = nullptr;
 		init_info.CheckVkResultFn = [](VkResult err)
 		{

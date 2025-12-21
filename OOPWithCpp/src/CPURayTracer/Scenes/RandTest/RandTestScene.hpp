@@ -30,11 +30,11 @@ namespace OWC
         bool OnEvent(BaseEvent& event) override;
 
     private:
-		size_t GetStepSize() const;
+		uSize GetStepSize() const;
 
     private:
 		bool m_UpdateImage = true;
-		size_t m_CurrentSampleIndex = 0;
+		uSize m_CurrentSampleIndex = 0;
 		RenderMode m_RenderMode = RenderMode::RandomColorVec2;
     };
 }

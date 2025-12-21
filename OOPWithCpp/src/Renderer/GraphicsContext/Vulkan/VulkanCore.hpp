@@ -86,7 +86,7 @@ namespace OWC::Graphics
 
 		[[nodiscard]] std::vector<vk::Semaphore> GetSemaphoresFromNames(std::span<std::string_view> semaphoreNames);
 
-		[[nodiscard]] uint32_t FindMemoryType(vk::DeviceSize size, vk::MemoryPropertyFlags properties) const;
+		[[nodiscard]] u32 FindMemoryType(vk::DeviceSize size, vk::MemoryPropertyFlags properties) const;
 
 		[[nodiscard]] inline const vk::Instance& GetVKInstance() const { return m_Instance; }
 		[[nodiscard]] inline const vk::SurfaceKHR& GetSurface() const { return m_Surface; }
@@ -107,8 +107,8 @@ namespace OWC::Graphics
 		[[nodiscard]] inline const vk::DescriptorPool& GetImGuiDescriptorPool() const { return m_ImGuiDescriptorPool; }
 		[[nodiscard]] inline const std::vector<vk::Image>& GetSwapchainImages() const { return m_SwapchainImages; }
 		[[nodiscard]] inline const std::vector<vk::ImageView>& GetSwapchainImageViews() const { return m_SwapchainImageViews; }
-		[[nodiscard]] inline size_t GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
-		[[nodiscard]] inline size_t GetNumberOfFramesInFlight() const { return m_SwapchainImageViews.size(); }
+		[[nodiscard]] inline uSize GetCurrentFrameIndex() const { return m_CurrentFrameIndex; }
+		[[nodiscard]] inline uSize GetNumberOfFramesInFlight() const { return m_SwapchainImageViews.size(); }
 
 		[[nodiscard]] inline std::vector<vk::Image>& GetSwapchainImages() { return m_SwapchainImages; }
 		[[nodiscard]] inline std::vector<vk::ImageView>& GetSwapchainImageViews() { return m_SwapchainImageViews; }
@@ -133,12 +133,12 @@ namespace OWC::Graphics
 		inline void SetSwapchain(const vk::SwapchainKHR& swapchain) { m_Swapchain = swapchain; }
 		inline void SetSwapchainImages(const std::vector<vk::Image>& swapchainImages) { m_SwapchainImages = swapchainImages; }
 		inline void SetSwapchainImageViews(const std::vector<vk::ImageView>& swapchainImageViews) { m_SwapchainImageViews = swapchainImageViews; }
-		inline void SetCurrentFrameIndex(size_t newIndex) { m_CurrentFrameIndex = newIndex; }
+		inline void SetCurrentFrameIndex(uSize newIndex) { m_CurrentFrameIndex = newIndex; }
 
 		inline void SetupSemaphores()
 		{
 			m_Semaphores.reserve(m_SwapchainImageViews.size());
-			for (size_t i = 0; i < m_SwapchainImageViews.size(); i++)
+			for (uSize i = 0; i < m_SwapchainImageViews.size(); i++)
 				m_Semaphores.emplace_back(std::map<std::string, vk::Semaphore>());
 		}
 
@@ -177,7 +177,7 @@ namespace OWC::Graphics
 		std::vector<vk::ImageView> m_SwapchainImageViews{};
 
 		std::vector<std::map<std::string, vk::Semaphore>> m_Semaphores{};
-		size_t m_CurrentFrameIndex = 0;
+		uSize m_CurrentFrameIndex = 0;
 
 		std::vector<std::shared_ptr<VulkanRenderPass>> m_RenderPassDatas{};
 

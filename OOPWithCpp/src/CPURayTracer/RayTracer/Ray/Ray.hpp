@@ -15,13 +15,13 @@ namespace OWC
 		const Vec3& GetDirection() const { return m_Direction; }
 		const Interval& GetHitDistanceInterval() const { return m_HitDistance; }
 
-		Vec3 GetPointAtDistance(float t) const { return m_Origin + t * m_Direction; }
+		Vec3 GetPointAtDistance(f32 t) const { return m_Origin + t * m_Direction; }
 
-		OWC_FORCE_INLINE void SetMaxHitDistance(float maxDistance) { m_HitDistance.SetMax(maxDistance); }
+		OWC_FORCE_INLINE void SetMaxHitDistance(f32 maxDistance) { m_HitDistance.SetMax(maxDistance); }
 
 	private:
 		Vec3 m_Origin = Vec3(0.0);
 		Vec3 m_Direction = Vec3(0.0);
-		Interval m_HitDistance{ 0.001f, std::numeric_limits<float>::max() };
+		Interval m_HitDistance{ 0.001f, std::numeric_limits<f32>::max() };
 	};
 }

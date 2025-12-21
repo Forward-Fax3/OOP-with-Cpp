@@ -13,7 +13,7 @@ namespace OWC
 	{
 	public:
 		Sphere() = delete;
-		OWC_FORCE_INLINE Sphere(const glm::vec3& center, float radius, const std::shared_ptr<BaseMaterial>& mat) : m_Center(center), m_Material(mat), m_Radius(radius) {}
+		OWC_FORCE_INLINE Sphere(const glm::vec3& center, f32 radius, const std::shared_ptr<BaseMaterial>& mat) : m_Center(center), m_Material(mat), m_Radius(radius) {}
 		~Sphere() override = default;
 
 		Sphere(const Sphere&) = delete;
@@ -26,6 +26,6 @@ namespace OWC
 	private:
 		glm::vec3 m_Center;
 		std::shared_ptr<BaseMaterial> m_Material;
-		float m_Radius;
+		f32 m_Radius;
 	};
 }

@@ -24,10 +24,10 @@ namespace OWC
 
 		m_CurrentSampleIndex++;
 		auto& frameBuffer = GetFrameBuffer();
-		size_t step = GetStepSize();
-		auto numberOfSamples = static_cast<float>(m_CurrentSampleIndex);
+		uSize step = GetStepSize();
+		auto numberOfSamples = static_cast<f32>(m_CurrentSampleIndex);
 
-		size_t i = 0;
+		uSize i = 0;
 		for (; i < frameBuffer.size(); i += step)
 		{
 			switch (m_RenderMode)
@@ -80,9 +80,9 @@ namespace OWC
 			{
 				Vec4 noise = Rand::LinearFastRandVec4(Vec4(0.0f), Vec4(1.0f)) * numberOfSamples;
 
-				size_t remaining = frameBuffer.size() - i;
+				uSize remaining = frameBuffer.size() - i;
 
-				for (size_t j = 0; j < remaining; ++j)
+				for (uSize j = 0; j < remaining; ++j)
 				{
 					Vec3 jVec3(noise[j]);
 					frameBuffer[i + j] = Vec4(jVec3, 1.0f);
@@ -110,8 +110,8 @@ namespace OWC
 			"Random Color Vec4",
 			"Black and White Noise Vec4"
 		};
-		static int currentRenderModeIndex = 0;
-		if (ImGui::Combo("Render Mode", &currentRenderModeIndex, renderModeNames.data(), static_cast<int>(renderModeNames.size())))
+		static i32 currentRenderModeIndex = 0;
+		if (ImGui::Combo("Render Mode", &currentRenderModeIndex, renderModeNames.data(), static_cast<i32>(renderModeNames.size())))
 			m_RenderMode = static_cast<RenderMode>(currentRenderModeIndex);
 		ImGui::End();
 	}
@@ -128,7 +128,7 @@ namespace OWC
 		return false;
 	}
 
-	size_t RandTestScene::GetStepSize() const
+	uSize RandTestScene::GetStepSize() const
 	{
 		switch (m_RenderMode)
 		{

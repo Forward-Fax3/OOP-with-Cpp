@@ -22,7 +22,7 @@ namespace OWC::Graphics
 
 		virtual void UpdateBufferData(std::span<const std::byte> data) = 0;
 
-		static std::shared_ptr<UniformBuffer> CreateUniformBuffer(size_t size);
+		static std::shared_ptr<UniformBuffer> CreateUniformBuffer(uSize size);
 	};
 
 	class TextureBuffer
@@ -38,6 +38,6 @@ namespace OWC::Graphics
 		virtual void UpdateBufferData(const std::vector<glm::vec4>& data) = 0;
 
 		static std::shared_ptr<TextureBuffer> CreateTextureBuffer(const ImageLoader& image);
-		static std::shared_ptr<TextureBuffer> CreateTextureBuffer(uint32_t width, uint32_t height);
+		static std::shared_ptr<TextureBuffer> CreateTextureBuffer(u32 width, u32 height);
 	};
 }

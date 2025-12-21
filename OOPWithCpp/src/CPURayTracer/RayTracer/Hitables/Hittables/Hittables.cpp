@@ -1,4 +1,5 @@
-﻿#include "Hittables.hpp"
+﻿#include "Core.hpp"
+#include "Hittables.hpp"
 
 
 namespace OWC
@@ -15,7 +16,7 @@ namespace OWC
 
 	void Hitables::AddObjects(const std::vector<std::shared_ptr<BaseHittable>>& newHittables)
 	{
-		size_t newSize = m_Hitables.size() + newHittables.size();
+		uSize newSize = m_Hitables.size() + newHittables.size();
 
 		if (m_Hitables.capacity() < newSize)
 			m_Hitables.reserve(newSize);
@@ -26,12 +27,12 @@ namespace OWC
 
 	void Hitables::AddObjects(const std::shared_ptr<Hitables>& newHittables)
 	{
-		size_t newSize = m_Hitables.size() + newHittables->GetNumberOfObjects();
+		uSize newSize = m_Hitables.size() + newHittables->GetNumberOfObjects();
 
 		if (m_Hitables.capacity() < newSize)
 			m_Hitables.reserve(newSize);
 
-		for (size_t i = 0; i < newHittables->GetNumberOfObjects(); i++)
+		for (uSize i = 0; i < newHittables->GetNumberOfObjects(); i++)
 			AddObject(newHittables->m_Hitables[i]);
 	}
 
@@ -39,7 +40,7 @@ namespace OWC
 	{
 		Ray rayCopy(ray);
 		HitData closestHitData;
-		closestHitData.t = std::numeric_limits<float>::max();
+		closestHitData.t = std::numeric_limits<f32>::max();
 		closestHitData.hasHit = false;
 
 		for (const auto& hittable : m_Hitables)

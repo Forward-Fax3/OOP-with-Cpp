@@ -12,20 +12,20 @@ namespace OWC
 
 		glm::vec3 oc = m_Center - ray.GetOrigin();
 
-		constexpr float a = 1.0f; // ray direction is normalized so the length squared will alway be 1
-		float h = glm::dot(oc, ray.GetDirection());
-		float c = glm::length2(oc) - m_Radius * m_Radius;
+		constexpr f32 a = 1.0f; // ray direction is normalized so the length squared will alway be 1
+		f32 h = glm::dot(oc, ray.GetDirection());
+		f32 c = glm::length2(oc) - m_Radius * m_Radius;
 
-		float discriminant = h * h - a * c;
+		f32 discriminant = h * h - a * c;
 		if (discriminant <= 0.0f)
 		{
 			hitData.hasHit = false;
 			return hitData;
 		}
 
-		float sqrtDiscriminant = glm::sqrt(discriminant);
+		f32 sqrtDiscriminant = glm::sqrt(discriminant);
 
-		float root = (h - sqrtDiscriminant) / a;
+		f32 root = (h - sqrtDiscriminant) / a;
 		if (!ray.GetHitDistanceInterval().Contains(root))
 		{
 			root = (h + sqrtDiscriminant) / a;

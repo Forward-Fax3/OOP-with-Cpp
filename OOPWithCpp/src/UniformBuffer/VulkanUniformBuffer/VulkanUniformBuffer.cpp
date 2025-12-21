@@ -8,7 +8,7 @@ namespace OWC::Graphics
 	// VulkanUniformBuffer
 	//--------------------------------------------------------
 
-	VulkanUniformBuffer::VulkanUniformBuffer(size_t size)
+	VulkanUniformBuffer::VulkanUniformBuffer(uSize size)
 	{
 		const auto& vkCore = VulkanCore::GetInstance();
 		const auto& device = vkCore.GetDevice();
@@ -20,7 +20,7 @@ namespace OWC::Graphics
 		m_UniformBuffersMemory.reserve(vkCore.GetNumberOfFramesInFlight());
 		m_MappedUniformBuffers.reserve(vkCore.GetNumberOfFramesInFlight());
 
-		for (size_t i = 0; i < vkCore.GetNumberOfFramesInFlight(); i++)
+		for (uSize i = 0; i < vkCore.GetNumberOfFramesInFlight(); i++)
 		{
 			vk::Buffer buffer = device.createBuffer(vk::BufferCreateInfo()
 				.setSize(bufferSize)
@@ -57,7 +57,7 @@ namespace OWC::Graphics
 	void VulkanUniformBuffer::UpdateBufferData(std::span<const std::byte> data)
 	{
 		const auto& vkCore = VulkanCore::GetInstance();
-		size_t currentFrame = vkCore.GetCurrentFrameIndex();
+		uSize currentFrame = vkCore.GetCurrentFrameIndex();
 		std::memcpy(m_MappedUniformBuffers[currentFrame], data.data(), data.size());
 
 		// todo: add staging buffers
@@ -68,13 +68,13 @@ namespace OWC::Graphics
 	//--------------------------------------------------------
 
 	VulkanTextureBuffer::VulkanTextureBuffer(const ImageLoader& image)
-		: m_Width(static_cast<uint32_t>(image.GetWidth())), m_Height(static_cast<uint32_t>(image.GetHeight()))
+		: m_Width(static_cast<u32>(image.GetWidth())), m_Height(static_cast<u32>(image.GetHeight()))
 	{
 		InitializeTexture();
 		VulkanTextureBuffer::UpdateBufferData(image.GetImageData()); // using specifically VulkanTextureBuffer to remove static analysis warning
 	}
 
-	VulkanTextureBuffer::VulkanTextureBuffer(uint32_t width, uint32_t height)
+	VulkanTextureBuffer::VulkanTextureBuffer(u32 width, u32 height)
 		: m_Width(width), m_Height(height)
 	{
 		InitializeTexture();
@@ -98,7 +98,7 @@ namespace OWC::Graphics
 		vk::DeviceMemory stagingBufferMemory;
 
 		// Create staging buffer
-		vk::DeviceSize imageSize = static_cast<size_t>(m_Width) * static_cast<size_t>(m_Height) * sizeof(glm::vec4);
+		vk::DeviceSize imageSize = static_cast<uSize>(m_Width) * static_cast<uSize>(m_Height) * sizeof(glm::vec4);
 		stagingBuffer = device.createBuffer(vk::BufferCreateInfo()
 			.setSize(imageSize)
 			.setUsage(vk::BufferUsageFlagBits::eTransferSrc)
@@ -241,7 +241,7 @@ namespace OWC::Graphics
 				.setBaseArrayLayer(0)
 				.setLayerCount(1)));
 
-		float maxAnisotropy = vkCore.GetPhysicalDev().getProperties().limits.maxSamplerAnisotropy;
+		f32 maxAnisotropy = vkCore.GetPhysicalDev().getProperties().limits.maxSamplerAnisotropy;
 
 		// Create sampler
 		m_TextureSampler = device.createSampler(vk::SamplerCreateInfo()

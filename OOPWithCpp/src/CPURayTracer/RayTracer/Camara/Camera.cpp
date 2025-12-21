@@ -15,7 +15,7 @@ namespace OWC
 		: m_Pixels(pixels), m_Hittables(hittables)
 	{
 		const auto& app = Application::GetConstInstance();
-		SetScreenSize(Vec2(static_cast<float>(app.GetWindowWidth()), static_cast<float>(app.GetWindowHeight())));
+		SetScreenSize(Vec2(static_cast<f32>(app.GetWindowWidth()), static_cast<f32>(app.GetWindowHeight())));
 	}
 
 	void RTCamera::SingleThreadedRenderPass()
@@ -23,11 +23,11 @@ namespace OWC
 		if (m_PositionNeedsUpdating)
 			CreateViewMatrix();
 
-		glm::vec<2, size_t> screenSize(m_ScreenSize);
+		glm::vec<2, uSize> screenSize(m_ScreenSize);
 
-		for (size_t i = 0; i != screenSize.y; i++)
-			for (size_t j = 0; j != screenSize.x; j++)
-				for (size_t k = 0; k != m_NumberOfSamplesPerPass; k++)
+		for (uSize i = 0; i != screenSize.y; i++)
+			for (uSize j = 0; j != screenSize.x; j++)
+				for (uSize k = 0; k != m_NumberOfSamplesPerPass; k++)
 				{
 					Ray ray = CreateRay(i, j);
 					m_Pixels[(i * screenSize.x) + j] += RayColour(ray);
@@ -44,9 +44,9 @@ namespace OWC
 		Vec3 right = glm::normalize(Vec3(rotationMatrix * Vec4(1.0f, 0.0, 0.0, 0.0)));
 		Vec3 up = glm::normalize(Vec3(rotationMatrix * Vec4(0.0f, -1.0, 0.0, 0.0)));
 
-		float aspectRatio = m_ScreenSize.x / m_ScreenSize.y;
-		float viewportHeight = 2.0f * m_FocalLength * glm::tan(glm::radians(m_FOV) * 0.5f);
-		float viewportWidth = aspectRatio * viewportHeight;
+		f32 aspectRatio = m_ScreenSize.x / m_ScreenSize.y;
+		f32 viewportHeight = 2.0f * m_FocalLength * glm::tan(glm::radians(m_FOV) * 0.5f);
+		f32 viewportWidth = aspectRatio * viewportHeight;
 
 		Point viewportU = viewportWidth * right;
 		Point viewportV = viewportHeight * -up;
@@ -60,7 +60,7 @@ namespace OWC
 		m_PositionNeedsUpdating = false;
 	}
 
-	Ray RTCamera::CreateRay(size_t i, size_t j) const
+	Ray RTCamera::CreateRay(uSize i, uSize j) const
 	{
 		Vec2 randomOffset = Rand::LinearFastRandVec2(Vec2(0.0f), Vec2(1.0f)) + Vec2(j, i);
 		Vec3 rayDirection = m_Pixel100Location +
@@ -73,14 +73,14 @@ namespace OWC
 	Colour RTCamera::RayColour(Ray ray)
 	{
 		bool missed = false;
-		size_t i = 0;
+		uSize i = 0;
 
 		for (; i != m_MaxBounces; i++)
 		{
 			HitData hitData = m_Hittables->IsHit(ray);
 			if (!hitData.hasHit)
 			{
-				float t = 0.5f * (ray.GetDirection().y + 1.0f);
+				f32 t = 0.5f * (ray.GetDirection().y + 1.0f);
 				m_BouncedColours[i] = (1.0f - t) + t * Colour(0.5f, 0.7f, 1.0f, 1.0f);
 				missed = true;
 				break;

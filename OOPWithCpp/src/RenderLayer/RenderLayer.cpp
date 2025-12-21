@@ -18,7 +18,7 @@ namespace OWC
 	RenderLayer::RenderLayer(const std::shared_ptr<InterLayerData>& ILD)
 		: m_ILD(ILD)
 	{
-		m_UniformBuffer = Graphics::UniformBuffer::CreateUniformBuffer(sizeof(float) * 2);
+		m_UniformBuffer = Graphics::UniformBuffer::CreateUniformBuffer(sizeof(f32) * 2);
 		m_Image = Graphics::TextureBuffer::CreateTextureBuffer(1, 1);
 		std::vector<glm::vec4> emptyImageData = { glm::vec4(0.0f) };
 		m_Image->UpdateBufferData(emptyImageData);
@@ -35,12 +35,12 @@ namespace OWC
 
 		struct UniformBufferObject
 		{
-			float divider = 0.0;
-			float invGammaValue = 0.0f;
+			f32 divider = 0.0;
+			f32 invGammaValue = 0.0f;
 		};
 
 		UniformBufferObject ubo{
-			.divider = 1.0f / static_cast<float>(m_ILD->numberOfSamples),
+			.divider = 1.0f / static_cast<f32>(m_ILD->numberOfSamples),
 			.invGammaValue = m_ILD->invGammaValue
 		};
 
@@ -106,7 +106,7 @@ namespace OWC
 	void RenderLayer::SetupRenderPass()
 	{
 		using namespace OWC::Graphics;
-		constexpr uint32_t numberOfVertices = 6;
+		constexpr u32 numberOfVertices = 6;
 
 		m_renderPass = Renderer::BeginPass();
 		Renderer::PipelineBind(m_renderPass, *m_Shader);
@@ -137,13 +137,13 @@ namespace OWC
 
 		std::vector<ShaderData> shaderDatas = {
 			{
-				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/Image.vert.spv"),
+				.bytecode = LoadFileToBytecode<u32>("../ShaderSrc/Image.vert.spv"),
 				.type = ShaderType::Vertex,
 				.language = ShaderData::ShaderLanguage::SPIRV,
 				.descriptorType = {}
 			},
 			{
-				.bytecode = LoadFileToBytecode<uint32_t>("../ShaderSrc/Image.frag.spv"),
+				.bytecode = LoadFileToBytecode<u32>("../ShaderSrc/Image.frag.spv"),
 				.type = ShaderType::Fragment,
 				.language = ShaderData::ShaderLanguage::SPIRV,
 				.descriptorType = fragmentBindingDiscriptions

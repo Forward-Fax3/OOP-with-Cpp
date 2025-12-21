@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core.hpp"
 #include "Layer.hpp"
 #include "Renderer.hpp"
 
@@ -27,7 +28,7 @@ namespace OWC
 	private:
 		std::shared_ptr<Graphics::RenderPassData> m_RenderPassData = nullptr;
 		std::chrono::steady_clock::time_point m_LastTime;
-		float m_DeltaTime = 0.0f;
+		f32 m_DeltaTime = 0.0f;
 		bool m_IsMinimized = false;
 	};
 }

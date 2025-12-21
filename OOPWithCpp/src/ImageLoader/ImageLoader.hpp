@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core.hpp"
 #include <string_view>
 #include <vector>
 
@@ -19,16 +20,16 @@ namespace OWC
 		virtual ~ImageLoader() = default;
 
 		[[nodiscard]] const std::vector<glm::vec4>& GetImageData() const { return m_ImageData; }
-		[[nodiscard]] const glm::vec4& GetPixel(size_t x, size_t y) const { return m_ImageData[y * m_Width + x]; }
+		[[nodiscard]] const glm::vec4& GetPixel(uSize x, uSize y) const { return m_ImageData[y * m_Width + x]; }
 		// expects x and y to be in the range [0.0, 1.0]
-		[[nodiscard]] const glm::vec4& GetPixel(float x, float y) const { return m_ImageData[static_cast<size_t>(y * static_cast<float>(m_Height)) * m_Width + static_cast<size_t>(x * static_cast<float>(m_Width))]; }
-		[[nodiscard]] size_t GetWidth() const { return m_Width; }
-		[[nodiscard]] size_t GetHeight() const { return m_Height; }
+		[[nodiscard]] const glm::vec4& GetPixel(f32 x, f32 y) const { return m_ImageData[static_cast<uSize>(y * static_cast<f32>(m_Height)) * m_Width + static_cast<uSize>(x * static_cast<f32>(m_Width))]; }
+		[[nodiscard]] uSize GetWidth() const { return m_Width; }
+		[[nodiscard]] uSize GetHeight() const { return m_Height; }
 
 	private:
 		std::vector<glm::vec4> m_ImageData;
-		size_t m_Width = 0;
-		size_t m_Height = 0;
+		uSize m_Width = 0;
+		uSize m_Height = 0;
 	};
 }
  

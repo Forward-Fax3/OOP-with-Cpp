@@ -40,7 +40,7 @@ namespace OWC::Graphics
 			VulkanCore::GetInstance().GetDevice().destroyShaderModule(shaderModule);
 	}
 
-	void VulkanShader::BindUniform(uint32_t binding, const std::shared_ptr<UniformBuffer>& uniformBuffer)
+	void VulkanShader::BindUniform(u32 binding, const std::shared_ptr<UniformBuffer>& uniformBuffer)
 	{
 		const auto vulkanUniformBuffer = std::dynamic_pointer_cast<VulkanUniformBuffer>(uniformBuffer);
 
@@ -75,7 +75,7 @@ namespace OWC::Graphics
 		device.updateDescriptorSets(writeDescriptorSets, {});
 	}
 
-	void VulkanShader::BindTexture(uint32_t binding, const std::shared_ptr<TextureBuffer>& textureBuffer)
+	void VulkanShader::BindTexture(u32 binding, const std::shared_ptr<TextureBuffer>& textureBuffer)
 	{
 		const auto vulkanTextureBuffer = std::dynamic_pointer_cast<VulkanTextureBuffer>(textureBuffer);
 		if (!vulkanTextureBuffer)
@@ -130,7 +130,7 @@ namespace OWC::Graphics
 		for (const auto& shaderData : vulkanShaderDatas)
 		{
 			const vk::ShaderModuleCreateInfo shaderModuleCreateInfo = vk::ShaderModuleCreateInfo()
-				.setCodeSize(shaderData.bytecode.size() * sizeof(uint32_t))
+				.setCodeSize(shaderData.bytecode.size() * sizeof(u32))
 				.setPCode(shaderData.bytecode.data());
 
 			m_ShaderModules.emplace_back(device.createShaderModule(shaderModuleCreateInfo));
@@ -149,7 +149,7 @@ namespace OWC::Graphics
 		};
 
 		const vk::PipelineDynamicStateCreateInfo dynamicStateCreateInfo = vk::PipelineDynamicStateCreateInfo()
-			.setDynamicStateCount(static_cast<uint32_t>(dynamicStates.size()))
+			.setDynamicStateCount(static_cast<u32>(dynamicStates.size()))
 			.setPDynamicStates(dynamicStates.data());
 
 		constexpr vk::PipelineVertexInputStateCreateInfo vertexInputInfo{};
@@ -158,8 +158,8 @@ namespace OWC::Graphics
 			.setPrimitiveRestartEnable(vk::False);
 
 		const vk::Viewport viewport = vk::Viewport()
-			.setHeight(static_cast<float>(Application::GetConstInstance().GetWindow().GetHeight()))
-			.setWidth(static_cast<float>(Application::GetConstInstance().GetWindow().GetWidth()))
+			.setHeight(static_cast<f32>(Application::GetConstInstance().GetWindow().GetHeight()))
+			.setWidth(static_cast<f32>(Application::GetConstInstance().GetWindow().GetWidth()))
 			.setMinDepth(0.0f)
 			.setMaxDepth(1.0f)
 			.setX(0.0f)
@@ -168,8 +168,8 @@ namespace OWC::Graphics
 		const vk::Rect2D scissor = vk::Rect2D()
 			.setOffset({ 0, 0 })
 			.setExtent({
-				static_cast<uint32_t>(Application::GetConstInstance().GetWindowWidth()),
-				static_cast<uint32_t>(Application::GetConstInstance().GetWindowHeight())
+				static_cast<u32>(Application::GetConstInstance().GetWindowWidth()),
+				static_cast<u32>(Application::GetConstInstance().GetWindowHeight())
 			});
 
 		const vk::PipelineViewportStateCreateInfo viewportState = vk::PipelineViewportStateCreateInfo()
@@ -319,7 +319,7 @@ namespace OWC::Graphics
 		if (stage == vk::ShaderStageFlags())
 			Log<LogLevel::Error>("VulkanShader::ConvertToVulkanShaderStage: Unknown shader type provided: {}!", std::to_underlying(type));
 
-		return static_cast<vk::ShaderStageFlagBits>(static_cast<uint32_t>(stage)); // don't ask
+		return static_cast<vk::ShaderStageFlagBits>(static_cast<u32>(stage)); // don't ask
 	}
 
 	vk::DescriptorType VulkanShader::ConvertToVulkanDescriptorType(DescriptorType type)

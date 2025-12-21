@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core.hpp"
 #include <functional>
 #include <memory>
 
@@ -12,8 +13,8 @@ namespace OWC
 	struct WindowProperties
 	{
 		std::u8string Title;
-		int Width;
-		int Height;
+		i32 Width;
+		i32 Height;
 	};
 
 	class Window
@@ -35,12 +36,12 @@ namespace OWC
 		Graphics::GraphicsContext& GetGraphicsContext() const { return *m_GraphicsContext; }
 		std::weak_ptr<Graphics::GraphicsContext> GetGraphicsContextPtr() const { return m_GraphicsContext; }
 
-		int GetWidth() const { return m_Properties.Width; }
-		int GetHeight() const { return m_Properties.Height; }
+		i32 GetWidth() const { return m_Properties.Width; }
+		i32 GetHeight() const { return m_Properties.Height; }
 
 		bool IsWindowMinimized() const { return m_IsMinimized; }
 
-		void Resize(int width, int height);
+		void Resize(i32 width, i32 height);
 		void Minimize();
 		void Restore();
 

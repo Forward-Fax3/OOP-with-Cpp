@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core.hpp"
 #include "BaseHittable.hpp"
 
 #include <memory>
@@ -16,8 +17,8 @@ namespace OWC
 		void AddObjects(const std::vector<std::shared_ptr<BaseHittable>>& newHittables);
 		void AddObjects(const std::shared_ptr<Hitables>& newHittables);
 
-		OWC_FORCE_INLINE void Reserve(size_t numberOfObjects) { m_Hitables.reserve(numberOfObjects); }
-		OWC_FORCE_INLINE size_t GetNumberOfObjects() const { return m_Hitables.size(); }
+		OWC_FORCE_INLINE void Reserve(uSize numberOfObjects) { m_Hitables.reserve(numberOfObjects); }
+		OWC_FORCE_INLINE uSize GetNumberOfObjects() const { return m_Hitables.size(); }
 		OWC_FORCE_INLINE void ClearObjects() { m_Hitables.clear(); }
 
 		HitData IsHit(const Ray& ray) const override;

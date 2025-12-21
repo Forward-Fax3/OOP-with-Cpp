@@ -26,8 +26,8 @@ namespace OWC::Graphics
 
 	struct BindingDiscription
 	{
-		uint32_t descriptorCount;
-		uint32_t binding;
+		u32 descriptorCount;
+		u32 binding;
 		DescriptorType descriptorType;
 		ShaderType stageFlags;
 	};
@@ -61,7 +61,7 @@ namespace OWC::Graphics
 		}
 
 //		std::string source;
-		std::vector<uint32_t> bytecode; // for SPIR-V
+		std::vector<u32> bytecode; // for SPIR-V
 		
 		ShaderType type;
 		ShaderLanguage language;
@@ -78,8 +78,8 @@ namespace OWC::Graphics
 		BaseShader(BaseShader&&) noexcept = default;
 		BaseShader& operator=(BaseShader&&) noexcept = default;
 
-		virtual void BindUniform(uint32_t binding, const std::shared_ptr<UniformBuffer>& uniformBuffer) = 0;
-		virtual void BindTexture(uint32_t binding, const std::shared_ptr<TextureBuffer>& textureBuffer) = 0;
+		virtual void BindUniform(u32 binding, const std::shared_ptr<UniformBuffer>& uniformBuffer) = 0;
+		virtual void BindTexture(u32 binding, const std::shared_ptr<TextureBuffer>& textureBuffer) = 0;
 
 		static std::unique_ptr<BaseShader> CreateShader(const std::span<ShaderData>& shaderDatas);
 	};

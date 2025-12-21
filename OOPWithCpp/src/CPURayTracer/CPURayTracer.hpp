@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core.hpp"
 #include "Layer.hpp"
 #include "InterLayerData.hpp"
 #include "ImageLoader.hpp"
@@ -45,9 +46,9 @@ namespace OWC
 		bool m_RayTracingStateUpdated = false;
 		bool m_ToggleRaytracedImage = false;
 
-		int	m_CurrentSceneIndex = 0;
-		int	m_CurrentGammaIndex = 3; // Default to Gamma 2.2
-		float m_CustomGammaValue = 2.2f;
+		i32	m_CurrentSceneIndex = 0;
+		i32	m_CurrentGammaIndex = 3; // Default to Gamma 2.2
+		f32 m_CustomGammaValue = 2.2f;
 
 		std::unique_ptr<BaseScene> m_Scene;
 	};

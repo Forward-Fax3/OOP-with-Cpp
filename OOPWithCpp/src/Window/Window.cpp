@@ -47,7 +47,7 @@ namespace OWC
 #endif
 	}
 
-	void Window::Resize(int width, int height)
+	void Window::Resize(i32 width, i32 height)
 	{
 		if (m_Window)
 		{

@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include "Core.hpp"
 #include "UniformBuffer.hpp"
 #include "VulkanCore.hpp"
 
@@ -11,7 +12,7 @@ namespace OWC::Graphics
 	{
 	   public:
 		VulkanUniformBuffer() = delete;
-		explicit VulkanUniformBuffer(size_t size);
+		explicit VulkanUniformBuffer(uSize size);
 		~VulkanUniformBuffer() override;
 		VulkanUniformBuffer(VulkanUniformBuffer&) = delete;
 		VulkanUniformBuffer& operator=(VulkanUniformBuffer&) = delete;
@@ -21,7 +22,7 @@ namespace OWC::Graphics
 		void UpdateBufferData(std::span<const std::byte> data) override;
 
 		[[nodiscard]] vk::Buffer GetBuffer() const { return m_UniformBuffers[VulkanCore::GetConstInstance().GetCurrentFrameIndex()]; };
-		[[nodiscard]] size_t GetBufferSize() const { return static_cast<size_t>(VulkanCore::GetConstInstance().GetDevice().getBufferMemoryRequirements(m_UniformBuffers[0]).size); }
+		[[nodiscard]] uSize GetBufferSize() const { return static_cast<uSize>(VulkanCore::GetConstInstance().GetDevice().getBufferMemoryRequirements(m_UniformBuffers[0]).size); }
 
 		[[nodiscard]] std::vector<vk::Buffer> GetBuffers() const { return m_UniformBuffers; }
 
@@ -36,7 +37,7 @@ namespace OWC::Graphics
 	public:
 		VulkanTextureBuffer() = delete;
 		explicit VulkanTextureBuffer(const ImageLoader& image);
-		explicit VulkanTextureBuffer(uint32_t width, uint32_t height);
+		explicit VulkanTextureBuffer(u32 width, u32 height);
 		~VulkanTextureBuffer() override;
 		VulkanTextureBuffer(VulkanTextureBuffer&) = delete;
 		VulkanTextureBuffer& operator=(VulkanTextureBuffer&) = delete;
@@ -57,7 +58,7 @@ namespace OWC::Graphics
 		vk::DeviceMemory m_TextureImageMemory = vk::DeviceMemory();
 		vk::ImageView m_TextureImageView = vk::ImageView();
 		vk::Sampler m_TextureSampler = vk::Sampler();
-		uint32_t m_Width = 0;
-		uint32_t m_Height = 0;
+		u32 m_Width = 0;
+		u32 m_Height = 0;
 	};
 }

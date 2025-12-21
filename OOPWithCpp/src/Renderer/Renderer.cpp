@@ -57,7 +57,7 @@ namespace OWC::Graphics
 		data->BindUniform(shader);
 	}
 
-	void Renderer::Draw(const std::shared_ptr<RenderPassData>& data, uint32_t vertexCount, uint32_t instanceCount /*= 1*/, uint32_t firstVertex /*= 0*/, uint32_t firstInstance /*= 0*/)
+	void Renderer::Draw(const std::shared_ptr<RenderPassData>& data, u32 vertexCount, u32 instanceCount /*= 1*/, u32 firstVertex /*= 0*/, u32 firstInstance /*= 0*/)
 	{
 		data->Draw(vertexCount, instanceCount, firstVertex, firstInstance);
 	}
@@ -88,7 +88,7 @@ namespace OWC::Graphics
 		data->DrawImGui(drawData);
 	}
 
-	void Renderer::BindTexture(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader, uint32_t binding, uint32_t textureID)
+	void Renderer::BindTexture(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader, u32 binding, u32 textureID)
 	{
 		data->BindTexture(shader, binding, textureID);
 	}

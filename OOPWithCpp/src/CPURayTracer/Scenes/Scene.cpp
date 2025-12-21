@@ -1,4 +1,5 @@
-﻿#include "Scene.hpp"
+﻿#include "Core.hpp"
+#include "Scene.hpp"
 #include "BasicScene.hpp"
 #include "RandTestScene.hpp"
 #include "DuelWhiteSpheres.hpp"

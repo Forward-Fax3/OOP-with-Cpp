@@ -9,11 +9,79 @@
 
 namespace OWC
 {
-	using bool32 = uint32_t;
-	using Vec2 = glm::vec2;
-	using Vec3 = glm::vec3;
-	using Vec4 = glm::vec4;
-	using Mat4 = glm::mat4;
+	using i8 = std::int8_t;
+	using i16 = std::int16_t;
+	using i32 = std::int32_t;
+	using i64 = std::int64_t;
+
+	using u8 = std::uint8_t;
+	using u16 = std::uint16_t;
+	using u32 = std::uint32_t;
+	using u64 = std::uint64_t;
+
+	using uSize = std::size_t;
+	using isize = std::ptrdiff_t;
+
+	using f32 = float;
+	using f64 = double;
+
+	using bool32 = u32;
+
+	using Vec2f32 = glm::vec<2, f32>;
+	using Vec3f32 = glm::vec<3, f32>;
+	using Vec4f32 = glm::vec<4, f32>;
+
+	using Mat2f32 = glm::mat<2, 2, f32>;
+	using Mat3f32 = glm::mat<3, 3, f32>;
+	using Mat4f32 = glm::mat<4, 4, f32>;
+
+	using Vec2f64 = glm::vec<2, f64>;
+	using Vec3f64 = glm::vec<3, f64>;
+	using Vec4f64 = glm::vec<4, f64>;
+
+	using Mat2f64 = glm::mat<2, 2, f64>;
+	using Mat3f64 = glm::mat<3, 3, f64>;
+	using Mat4f64 = glm::mat<4, 4, f64>;
+
+	using Vec2i8 = glm::vec<2, i8>;
+	using Vec3i8 = glm::vec<3, i8>;
+	using Vec4i8 = glm::vec<4, i8>;
+
+	using Vec2u8 = glm::vec<2, u8>;
+	using Vec3u8 = glm::vec<3, u8>;
+	using Vec4u8 = glm::vec<4, u8>;
+
+	using Vec2i16 = glm::vec<2, i16>;
+	using Vec3i16 = glm::vec<3, i16>;
+	using Vec4i16 = glm::vec<4, i16>;
+
+	using Vec2u16 = glm::vec<2, u16>;
+	using Vec3u16 = glm::vec<3, u16>;
+	using Vec4u16 = glm::vec<4, u16>;
+
+	using Vec2i32 = glm::vec<2, i32>;
+	using Vec3i32 = glm::vec<3, i32>;
+	using Vec4i32 = glm::vec<4, i32>;
+
+	using Vec2u32 = glm::vec<2, u32>;
+	using Vec3u32 = glm::vec<3, u32>;
+	using Vec4u32 = glm::vec<4, u32>;
+
+	using Vec2i = Vec2i32;
+	using Vec3i = Vec3i32;
+	using Vec4i = Vec4i32;
+
+	using Vec2u = Vec2u32;
+	using Vec3u = Vec3u32;
+	using Vec4u = Vec4u32;
+
+	using Vec2 = Vec2f32;
+	using Vec3 = Vec3f32;
+	using Vec4 = Vec4f32;
+
+	using Mat2 = Mat2f32;
+	using Mat3 = Mat3f32;
+	using Mat4 = Mat4f32;
 
 	using Point = Vec3;
 	using Colour = Vec4;

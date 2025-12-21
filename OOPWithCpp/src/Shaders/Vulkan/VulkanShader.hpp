@@ -16,7 +16,7 @@ namespace OWC::Graphics
 		struct VulkanShaderData
 		{
 			std::string entryPoint;
-			std::vector<uint32_t> bytecode;
+			std::vector<u32> bytecode;
 			vk::ShaderStageFlagBits stage;
 			std::vector<BindingDiscription> bindingDescriptions;
 		};
@@ -29,8 +29,8 @@ namespace OWC::Graphics
 		VulkanShader(VulkanShader&&) noexcept = delete;
 		VulkanShader& operator=(VulkanShader&&) noexcept = delete;
 
-		void BindUniform(uint32_t binding, const std::shared_ptr<UniformBuffer>& uniformBuffer) override;
-		void BindTexture(uint32_t binding, const std::shared_ptr<TextureBuffer>& textureBuffer) override;
+		void BindUniform(u32 binding, const std::shared_ptr<UniformBuffer>& uniformBuffer) override;
+		void BindTexture(u32 binding, const std::shared_ptr<TextureBuffer>& textureBuffer) override;
 
 		[[nodiscard]] vk::Pipeline GetPipeline() const { return m_Pipeline; }
 		[[nodiscard]] vk::PipelineLayout GetPipelineLayout() const { return m_PipelineLayout; }

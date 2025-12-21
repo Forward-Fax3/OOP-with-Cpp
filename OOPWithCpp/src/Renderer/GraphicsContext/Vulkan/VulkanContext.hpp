@@ -12,19 +12,19 @@ namespace OWC::Graphics
 	private:
 		struct QueueFamilyIndices
 		{
-			uint32_t PresentFamily = std::numeric_limits<uint32_t>::max();
-			uint32_t GraphicsFamily = std::numeric_limits<uint32_t>::max();
-			uint32_t ComputeFamily = std::numeric_limits<uint32_t>::max();
-			uint32_t TransferFamily = std::numeric_limits<uint32_t>::max();
+			u32 PresentFamily = std::numeric_limits<u32>::max();
+			u32 GraphicsFamily = std::numeric_limits<u32>::max();
+			u32 ComputeFamily = std::numeric_limits<u32>::max();
+			u32 TransferFamily = std::numeric_limits<u32>::max();
 			
-			std::vector<uint32_t> uniqueIndices = {};
+			std::vector<u32> uniqueIndices = {};
 
 			// helper function to check if all families are found
 			[[nodiscard]] inline bool FoundAll() const
 			{
 				return (PresentFamily | GraphicsFamily |
 						ComputeFamily | TransferFamily)
-						!= std::numeric_limits<uint32_t>::max();
+						!= std::numeric_limits<u32>::max();
 			}
 		};
 
@@ -61,7 +61,7 @@ namespace OWC::Graphics
 #endif
 		void SurfaceInit(SDL_Window& windowHandle);
 		void SelectPhysicalDevice();
-		std::pair<bool, uint32_t> IsPhysicalDeviceSuitable(const vk::PhysicalDevice& device);
+		std::pair<bool, u32> IsPhysicalDeviceSuitable(const vk::PhysicalDevice& device);
 		void FindQueueFamilies();
 		void CheckQueueFamilyValidity(const std::vector<vk::QueueFamilyProperties> queueFamilies);
 		void GetAndStoreGlobalQueueFamilies() const;

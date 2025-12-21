@@ -82,7 +82,7 @@ namespace OWC
 		{
 			ImGui::Text("number of samples %s", std::format("{}", m_InterLayerData->numberOfSamples).c_str());
 
-			if (ImGui::Combo("Scene", &m_CurrentSceneIndex, sceneNames.data(), static_cast<int>(sceneNames.size())))
+			if (ImGui::Combo("Scene", &m_CurrentSceneIndex, sceneNames.data(), static_cast<i32>(sceneNames.size())))
 			{
 				auto selectedScene = static_cast<Scene>(m_CurrentSceneIndex);
 				m_Scene = BaseScene::CreateScene(selectedScene, m_InterLayerData->imageData);
@@ -92,7 +92,7 @@ namespace OWC
 					pixel = Vec4(0.0f);
 			}
 
-			if (ImGui::Combo("Gamma Correction", &m_CurrentGammaIndex, gammaCorrectionNames.data(), static_cast<int>(gammaCorrectionNames.size())))
+			if (ImGui::Combo("Gamma Correction", &m_CurrentGammaIndex, gammaCorrectionNames.data(), static_cast<i32>(gammaCorrectionNames.size())))
 			{
 				auto gamma = static_cast<GammaCorrection>(m_CurrentGammaIndex);
 				if (gamma != GammaCorrection::custom)

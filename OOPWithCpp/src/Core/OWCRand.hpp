@@ -25,8 +25,8 @@ namespace OWC::Rand
 		temp ^= (temp >> 8);
 		stats[0] = temp ^ s ^ (s >> 19);
 		Vec2 randFloats(
-			static_cast<float>(stats[0] & 0xFFFFFFFF) * (1.0f / static_cast<float>(std::numeric_limits<uint32_t>::max())),
-			static_cast<float>((stats[0] >> 32) & 0xFFFFFFFF) * (1.0f / static_cast<float>(std::numeric_limits<uint32_t>::max()))
+			static_cast<f32>(stats[0] & 0xFFFFFFFF) * (1.0f / static_cast<f32>(std::numeric_limits<u32>::max())),
+			static_cast<f32>((stats[0] >> 32) & 0xFFFFFFFF) * (1.0f / static_cast<f32>(std::numeric_limits<u32>::max()))
 		);
 		return min + (max - min) * randFloats;
 	}
@@ -57,7 +57,7 @@ namespace OWC::Rand
 
 		tempShifted.data = _mm_srl_epi32(s.data, _mm_set_epi64x(0, 19));
 		states[0] = temp ^ s ^ tempShifted;
-		Vec4 randFloats = glm::vec4(states[0]) * (1.0f / static_cast<float>(std::numeric_limits<uint32_t>::max()));
+		Vec4 randFloats = glm::vec4(states[0]) * (1.0f / static_cast<f32>(std::numeric_limits<u32>::max()));
 		return min + (max - min) * randFloats;
 	}
 

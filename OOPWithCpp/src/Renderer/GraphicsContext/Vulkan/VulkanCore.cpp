@@ -54,7 +54,7 @@ namespace OWC::Graphics
 			vk::CommandBufferAllocateInfo()
 			.setCommandPool(m_GraphicsCommandPool)
 			.setLevel(vk::CommandBufferLevel::ePrimary)
-			.setCommandBufferCount(static_cast<uint32_t>(m_SwapchainImageViews.size()))
+			.setCommandBufferCount(static_cast<u32>(m_SwapchainImageViews.size()))
 		);
 
 		for (const auto& cmdBuf : commandBuffers)
@@ -69,7 +69,7 @@ namespace OWC::Graphics
 			vk::CommandBufferAllocateInfo()
 				.setCommandPool(m_ComputeCommandPool)
 				.setLevel(vk::CommandBufferLevel::ePrimary)
-				.setCommandBufferCount(static_cast<uint32_t>(m_SwapchainImageViews.size()))
+				.setCommandBufferCount(static_cast<u32>(m_SwapchainImageViews.size()))
 		);
 		return commandBuffers;
 	}
@@ -80,7 +80,7 @@ namespace OWC::Graphics
 			vk::CommandBufferAllocateInfo()
 				.setCommandPool(m_TransferCommandPool)
 				.setLevel(vk::CommandBufferLevel::ePrimary)
-				.setCommandBufferCount(static_cast<uint32_t>(m_SwapchainImageViews.size()))
+				.setCommandBufferCount(static_cast<u32>(m_SwapchainImageViews.size()))
 		);
 		return commandBuffers;
 	}
@@ -91,7 +91,7 @@ namespace OWC::Graphics
 			vk::CommandBufferAllocateInfo()
 			.setCommandPool(m_DynamicGraphicsCommandPool)
 			.setLevel(vk::CommandBufferLevel::ePrimary)
-			.setCommandBufferCount(static_cast<uint32_t>(m_SwapchainImageViews.size()))
+			.setCommandBufferCount(static_cast<u32>(m_SwapchainImageViews.size()))
 		);
 
 		for (const auto& cmdbuf : commandBuffers)
@@ -106,7 +106,7 @@ namespace OWC::Graphics
 			vk::CommandBufferAllocateInfo()
 			.setCommandPool(m_DynamicComputeCommandPool)
 			.setLevel(vk::CommandBufferLevel::ePrimary)
-			.setCommandBufferCount(static_cast<uint32_t>(m_SwapchainImageViews.size()))
+			.setCommandBufferCount(static_cast<u32>(m_SwapchainImageViews.size()))
 		);
 		return commandBuffers;
 	}
@@ -117,7 +117,7 @@ namespace OWC::Graphics
 			vk::CommandBufferAllocateInfo()
 			.setCommandPool(m_DynamicTransferCommandPool)
 			.setLevel(vk::CommandBufferLevel::ePrimary)
-			.setCommandBufferCount(static_cast<uint32_t>(m_SwapchainImageViews.size()))
+			.setCommandBufferCount(static_cast<u32>(m_SwapchainImageViews.size()))
 		);
 		return commandBuffers;
 	}
@@ -166,7 +166,7 @@ namespace OWC::Graphics
 
 			else
 			{
-				for (size_t i = 0; i < m_SwapchainImageViews.size(); ++i)
+				for (uSize i = 0; i < m_SwapchainImageViews.size(); ++i)
 				{
 					vk::SemaphoreCreateInfo semaphoreCreateInfo{};
 					semaphoreCreateInfo.setFlags(vk::SemaphoreCreateFlags());
@@ -182,11 +182,11 @@ namespace OWC::Graphics
 		return semaphores;
 	}
 
-	uint32_t VulkanCore::FindMemoryType(vk::DeviceSize size, vk::MemoryPropertyFlags properties) const
+	u32 VulkanCore::FindMemoryType(vk::DeviceSize size, vk::MemoryPropertyFlags properties) const
 	{
 		(void)size; // Unused parameter
 		vk::PhysicalDeviceMemoryProperties memoryProperties = m_PhysicalDevice.getMemoryProperties();
-		for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; ++i)
+		for (u32 i = 0; i < memoryProperties.memoryTypeCount; ++i)
 			if ((memoryProperties.memoryTypes[i].propertyFlags & properties) == properties)
 				return i;
 

@@ -5,7 +5,7 @@
 
 namespace OWC
 {
-	static bool operator<(const Vec3& lhs, float rhs)
+	static bool operator<(const Vec3& lhs, f32 rhs)
 	{
 		Vec3 absLHS(glm::abs(lhs));
 		return absLHS.x < rhs && absLHS.y < rhs && absLHS.z < rhs;

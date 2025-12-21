@@ -18,7 +18,7 @@ namespace OWC
 		Vec3 normal{};
 		Vec3 point{};
 		BaseMaterial* material = nullptr;
-		float t = 0.0;
+		f32 t = 0.0;
 		bool frontFace = false;
 		bool hasHit = false;
 

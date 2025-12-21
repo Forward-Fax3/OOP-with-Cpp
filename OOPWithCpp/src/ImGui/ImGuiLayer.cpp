@@ -1,4 +1,6 @@
-﻿#include "ImGuiLayer.hpp"
+﻿#include "Core.hpp"
+
+#include "ImGuiLayer.hpp"
 #include "Application.hpp"
 #include "Renderer.hpp"
 
@@ -45,7 +47,7 @@ namespace OWC
 	void ImGuiLayer::OnUpdate()
 	{
 		auto now = std::chrono::high_resolution_clock::now();
-		m_DeltaTime = std::chrono::duration<float, std::milli>(now - m_LastTime).count();
+		m_DeltaTime = std::chrono::duration<f32, std::milli>(now - m_LastTime).count();
 		m_LastTime = now;
 	}
 
@@ -79,7 +81,7 @@ namespace OWC
 		dispatcher.Dispatch<WindowResize>([](const WindowResize& WRE)
 			{
 				ImGuiIO& io = ImGui::GetIO();
-				io.DisplaySize = ImVec2(static_cast<float>(WRE.GetWidth()), static_cast<float>(WRE.GetHeight()));
+				io.DisplaySize = ImVec2(static_cast<f32>(WRE.GetWidth()), static_cast<f32>(WRE.GetHeight()));
 				return false;
 			});
 	}
