@@ -1,10 +1,12 @@
 #pragma once
+#include "Core.hpp"
+
 #include <format>
 
 
 namespace OWC
 {
-	enum class LogLevel : uint8_t
+	enum class LogLevel : u8
 	{
 		NewLine,
 		Trace,

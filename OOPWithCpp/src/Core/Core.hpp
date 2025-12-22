@@ -19,8 +19,8 @@ namespace OWC
 	using u32 = std::uint32_t;
 	using u64 = std::uint64_t;
 
-	using uSize = std::size_t;
 	using iSize = std::ptrdiff_t;
+	using uSize = std::size_t;
 
 	using f32 = float;
 	using f64 = double;

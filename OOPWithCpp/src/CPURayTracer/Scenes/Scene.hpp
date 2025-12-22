@@ -9,7 +9,7 @@
 
 namespace OWC
 {
-	enum class Scene : uint8_t
+	enum class Scene : u8
 	{ // TODO: Add more scenes
 		Basic , // A basic scene with just a sphere
 		RandTest, // A scene that fills the framebuffer with random colors

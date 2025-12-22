@@ -9,14 +9,14 @@
 
 namespace OWC::Graphics
 {
-	enum class ShaderType : uint8_t
+	enum class ShaderType : u8
 	{
 		Vertex = 1<<0,
 		Fragment = 1<<1,
 		Compute = 1<<2
 	};
 
-	enum class DescriptorType : uint8_t
+	enum class DescriptorType : u8
 	{
 		UniformBuffer,
 		Sampler,
@@ -34,7 +34,7 @@ namespace OWC::Graphics
 
 	struct ShaderData
 	{
-		enum class ShaderLanguage : uint8_t
+		enum class ShaderLanguage : u8
 		{ // for now only SPIR-V is supported
 //			GLSL,
 //			HLSL,

@@ -6,7 +6,7 @@ namespace OWC
 {
     class RandTestScene : public BaseScene
     {
-		enum class RenderMode : uint8_t
+		enum class RenderMode : u8
         {
             RandomColorVec2 = 0,
 			BlackAndWhiteNoiseVec2 = 1,

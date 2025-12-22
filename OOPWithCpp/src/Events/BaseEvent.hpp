@@ -1,11 +1,13 @@
 #pragma once
+#include "Core.hpp"
+
 #include <cstdint>
 #include <functional>
 
 
 namespace OWC
 {
-	enum class EventType : uint8_t
+	enum class EventType : u8
 	{
 		// TODO: possibly add restart event
 		None = 0,

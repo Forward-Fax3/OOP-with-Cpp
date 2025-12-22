@@ -11,7 +11,7 @@
 
 namespace OWC
 {
-	enum class GammaCorrection : uint8_t
+	enum class GammaCorrection : u8
 	{
 		None = 0,
 		Gamma19,
