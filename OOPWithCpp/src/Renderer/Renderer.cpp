@@ -92,4 +92,9 @@ namespace OWC::Graphics
 	{
 		data->BindTexture(shader, binding, textureID);
 	}
+
+	void Renderer::BindDynamicTexture(const std::shared_ptr<RenderPassData>& data, const BaseShader& shader, u32 binding, u32 textureID)
+	{
+		data->BindDynamicTexture(shader, binding, textureID);
+	}
 };

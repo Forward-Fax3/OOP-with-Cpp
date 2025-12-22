@@ -40,4 +40,18 @@ namespace OWC::Graphics
 		static std::shared_ptr<TextureBuffer> CreateTextureBuffer(const ImageLoader& image);
 		static std::shared_ptr<TextureBuffer> CreateTextureBuffer(u32 width, u32 height);
 	};
+
+	class DynamicTextureBuffer // a texture that can be updated every frame
+	{
+		public:
+		DynamicTextureBuffer() = default;
+		virtual ~DynamicTextureBuffer() = default;
+		DynamicTextureBuffer(DynamicTextureBuffer&) = default;
+		DynamicTextureBuffer& operator=(DynamicTextureBuffer&) = default;
+		DynamicTextureBuffer(DynamicTextureBuffer&&) noexcept = default;
+		DynamicTextureBuffer& operator=(DynamicTextureBuffer&&) noexcept = default;
+		virtual void UpdateBufferData(const std::vector<Vec4>& data) = 0;
+
+		static std::shared_ptr<DynamicTextureBuffer> CreateDynamicTextureBuffer(u32 width, u32 height);
+	};
 }

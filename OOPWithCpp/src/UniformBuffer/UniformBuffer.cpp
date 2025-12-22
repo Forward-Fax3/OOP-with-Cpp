@@ -21,4 +21,10 @@ namespace OWC::Graphics
 		// For now, only Vulkan is supported
 		return std::make_shared<VulkanTextureBuffer>(width, height);
 	}
+
+	std::shared_ptr<OWC::Graphics::DynamicTextureBuffer> DynamicTextureBuffer::CreateDynamicTextureBuffer(u32 width, u32 height)
+	{
+		// For now, only Vulkan is supported
+		return std::make_shared<VulkanDynamicTextureBuffer>(width, height);
+	}
 }

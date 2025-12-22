@@ -26,6 +26,7 @@ namespace OWC::Graphics
 		void AddPipeline(const BaseShader& shader) override;
 		void BindUniform(const BaseShader& shader) override;
 		void BindTexture(const BaseShader& shader, u32 binding, u32 textureID) override;
+		void BindDynamicTexture(const BaseShader& shader, u32 binding, u32 textureID) override;
 		void Draw(u32 vertexCount, u32 instanceCount = 1, u32 firstVertex = 0, u32 firstInstance = 0) override;
 		void EndRenderPass() override;
 		void submitRenderPass(std::span<std::string_view> waitSemaphoreNames, std::span<std::string_view> startSemaphore) override;

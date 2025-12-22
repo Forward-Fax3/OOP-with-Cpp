@@ -52,17 +52,16 @@ namespace OWC::Graphics
 
 		std::vector<vk::DescriptorBufferInfo> descriptorBufferInfos{}; // keep alive until updateDescriptorSets is called
 		descriptorBufferInfos.reserve(vulkanUniformBuffer->GetBuffers().size());
-
-		for (const auto& buffer : vulkanUniformBuffer->GetBuffers())
+		
+		for (uSize i = 0; i < vulkanUniformBuffer->GetBuffers().size(); i++)
 		{
 			descriptorBufferInfos.emplace_back(
-				buffer,
+				vulkanUniformBuffer->GetBuffers()[i],
 				0,
 				vulkanUniformBuffer->GetBufferSize()
 			);
-
 			writeDescriptorSets.emplace_back(
-				m_DescriptorSet,
+				m_DescriptorSet[i],
 				binding,
 				0,
 				1,
@@ -92,27 +91,58 @@ namespace OWC::Graphics
 			.setImageView(vulkanTextureBuffer->GetImageView())
 			.setSampler(vulkanTextureBuffer->GetSampler());
 
-		vk::WriteDescriptorSet writeDescriptorSets = vk::WriteDescriptorSet()
-			.setDstSet(m_DescriptorSet)
-			.setDstBinding(binding)
-			.setDstArrayElement(0)
-			.setDescriptorCount(1)
-			.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
-			.setImageInfo(descriptorImageInfo);
+		std::vector<vk::WriteDescriptorSet> writeDescriptorSets{};
+		writeDescriptorSets.reserve(vkCore.GetNumberOfFramesInFlight());
 
-//		writeDescriptorSets.emplace_back(
-//			m_DescriptorSet,
-//			binding,
-//			0,
-//			1,
-//			vk::DescriptorType::eCombinedImageSampler,
-//			&vk::DescriptorImageInfo()
-//				.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
-//				.setImageView(vulkanTextureBuffer->GetImageView())
-//				.setSampler(vulkanTextureBuffer->GetSampler()),
-//			nullptr
-//		);
+		for (uSize i = 0; i < vkCore.GetNumberOfFramesInFlight(); i++)
+		{
+			writeDescriptorSets.emplace_back(
+				m_DescriptorSet[i],
+				binding,
+				0,
+				1,
+				vk::DescriptorType::eCombinedImageSampler,
+				&descriptorImageInfo
+			);
+		}
 
+		device.updateDescriptorSets(writeDescriptorSets, {});
+	}
+
+	void VulkanShader::BindDynamicTexture(u32 binding, const std::shared_ptr<DynamicTextureBuffer>& dTextureBuffer)
+	{
+		const auto vulkanDynamicTextureBuffer = std::dynamic_pointer_cast<VulkanDynamicTextureBuffer>(dTextureBuffer);
+		if (!vulkanDynamicTextureBuffer)
+		{
+			Log<LogLevel::Error>("VulkanShader::BindDynamicTexture: Invalid VulkanDynamicTextureBuffer pointer.");
+			return;
+		}
+
+		const auto& vkCore = VulkanCore::GetConstInstance();
+		const auto& device = vkCore.GetDevice();
+		std::vector<vk::WriteDescriptorSet> writeDescriptorSets{};
+		writeDescriptorSets.reserve(vkCore.GetNumberOfFramesInFlight());
+
+		std::vector<vk::DescriptorImageInfo> descriptorImageInfos{}; // keep alive until updateDescriptorSets is called
+		descriptorImageInfos.reserve(vkCore.GetNumberOfFramesInFlight());
+
+		for (uSize i = 0; i < vkCore.GetNumberOfFramesInFlight(); i++)
+		{
+			descriptorImageInfos.emplace_back(
+				vulkanDynamicTextureBuffer->GetSampler(),
+				vulkanDynamicTextureBuffer->GetImageViews()[i],
+				vk::ImageLayout::eShaderReadOnlyOptimal
+			);
+
+			writeDescriptorSets.emplace_back(
+				m_DescriptorSet[i],
+				binding,
+				0,
+				1,
+				vk::DescriptorType::eCombinedImageSampler,
+				&descriptorImageInfos.back()
+			);
+		}
 		device.updateDescriptorSets(writeDescriptorSets, {});
 	}
 
@@ -121,7 +151,8 @@ namespace OWC::Graphics
 		// Create shader modules and pipeline
 
 		Log<LogLevel::Trace>("VulkanShader::CreateVulkanPipeline: Creating Vulkan pipeline with {} shader stages.", vulkanShaderDatas.size());
-		const auto& device = VulkanCore::GetConstInstance().GetDevice();
+		const auto& vkCore = VulkanCore::GetConstInstance();
+		const auto& device = vkCore.GetDevice();
 
 		std::vector<vk::PipelineShaderStageCreateInfo> shaderStages;
 		m_ShaderModules.reserve(vulkanShaderDatas.size());
@@ -267,13 +298,13 @@ namespace OWC::Graphics
 
 				if (it != poolSize.end())
 				{
-					it->descriptorCount += bindingDescription.descriptorCount * 10; // assuming max 10 sets
+					it->descriptorCount += bindingDescription.descriptorCount * vkCore.GetNumberOfFramesInFlight();
 				}
 				else
 				{
 					poolSize.emplace_back(
 						descriptorType,
-						bindingDescription.descriptorCount * 10 // assuming max 10 sets
+						bindingDescription.descriptorCount * vkCore.GetNumberOfFramesInFlight()
 					);
 				}
 			}
@@ -281,13 +312,16 @@ namespace OWC::Graphics
 
 		vk::DescriptorPoolCreateInfo poolInfo = vk::DescriptorPoolCreateInfo()
 			.setPoolSizes(poolSize)
-			.setMaxSets(10);
+			.setMaxSets(vkCore.GetNumberOfFramesInFlight());
 
 		m_DescriptorPool = device.createDescriptorPool(poolInfo);
 		vk::DescriptorSetAllocateInfo allocInfo = vk::DescriptorSetAllocateInfo()
 			.setDescriptorPool(m_DescriptorPool)
 			.setSetLayouts(m_DescriptorSetLayout);
-		m_DescriptorSet = device.allocateDescriptorSets(allocInfo).front();
+		for (u32 i = 0; i < vkCore.GetNumberOfFramesInFlight(); i++)
+		{
+			m_DescriptorSet.push_back(device.allocateDescriptorSets(allocInfo).front());
+		}
 	}
 
 	VulkanShader::VulkanShaderData VulkanShader::ProcessShaderData(const ShaderData& shaderData)

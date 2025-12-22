@@ -232,4 +232,28 @@ namespace OWC::Graphics
 		const vk::CommandBuffer& cmdBuf = m_CommandBuffers[VulkanCore::GetConstInstance().GetCurrentFrameIndex()];
 		ImGui_ImplVulkan_RenderDrawData(drawData, cmdBuf);
 	}
+
+	void VulkanRenderPass::BindDynamicTexture(const BaseShader& shader, u32 binding, u32 textureID)
+	{
+		(void)binding;
+		(void)textureID;
+		const auto& vulkanShader = dynamic_cast<const VulkanShader&>(shader);
+		if (GetRenderPassType() == RenderPassType::Dynamic)
+			m_CommandBuffers[VulkanCore::GetConstInstance().GetCurrentFrameIndex()].bindDescriptorSets(
+				vk::PipelineBindPoint::eGraphics,
+				vulkanShader.GetPipelineLayout(),
+				0,
+				vulkanShader.GetDescriptorSet(),
+				{}
+			);
+		else
+			for (const auto& cmdBuf : m_CommandBuffers)
+				cmdBuf.bindDescriptorSets(
+					vk::PipelineBindPoint::eGraphics,
+					vulkanShader.GetPipelineLayout(),
+					0,
+					vulkanShader.GetDescriptorSet(),
+					{}
+				);
+	}
 }

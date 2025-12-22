@@ -10,7 +10,7 @@ namespace OWC::Graphics
 {
 	class VulkanUniformBuffer : public UniformBuffer
 	{
-	   public:
+	public:
 		VulkanUniformBuffer() = delete;
 		explicit VulkanUniformBuffer(uSize size);
 		~VulkanUniformBuffer() override;
@@ -58,6 +58,38 @@ namespace OWC::Graphics
 		vk::DeviceMemory m_TextureImageMemory = vk::DeviceMemory();
 		vk::ImageView m_TextureImageView = vk::ImageView();
 		vk::Sampler m_TextureSampler = vk::Sampler();
+		u32 m_Width = 0;
+		u32 m_Height = 0;
+	};
+
+	class VulkanDynamicTextureBuffer : public DynamicTextureBuffer
+	{
+	public:
+		VulkanDynamicTextureBuffer() = delete;
+		explicit VulkanDynamicTextureBuffer(u32 width, u32 height);
+		~VulkanDynamicTextureBuffer() override;
+		VulkanDynamicTextureBuffer(VulkanDynamicTextureBuffer&) = delete;
+		VulkanDynamicTextureBuffer& operator=(VulkanDynamicTextureBuffer&) = delete;
+		VulkanDynamicTextureBuffer(VulkanDynamicTextureBuffer&&) noexcept = delete;
+		VulkanDynamicTextureBuffer& operator=(VulkanDynamicTextureBuffer&&) noexcept = delete;
+		void UpdateBufferData(const std::vector<Vec4>& data) override;
+
+		[[nodiscard]] vk::Image GetImage() const { return m_TextureImage[VulkanCore::GetConstInstance().GetCurrentFrameIndex()]; }
+		[[nodiscard]] vk::ImageView GetImageView() const { return m_TextureImageView[VulkanCore::GetConstInstance().GetCurrentFrameIndex()]; }
+		[[nodiscard]] vk::Sampler GetSampler() const { return m_TextureSampler[VulkanCore::GetConstInstance().GetCurrentFrameIndex()]; }
+
+		[[nodiscard]] const std::vector<vk::Image>& GetImages() const { return m_TextureImage; }
+		[[nodiscard]] const std::vector<vk::ImageView>& GetImageViews() const { return m_TextureImageView; }
+		[[nodiscard]] const std::vector<vk::Sampler>& GetSamplers() const { return m_TextureSampler; }
+
+	private:
+		void InitializeTexture();
+
+	private:
+		std::vector<vk::Image> m_TextureImage = {};
+		std::vector<vk::DeviceMemory> m_TextureImageMemory = {};
+		std::vector<vk::ImageView> m_TextureImageView = {};
+		std::vector<vk::Sampler> m_TextureSampler = {};
 		u32 m_Width = 0;
 		u32 m_Height = 0;
 	};

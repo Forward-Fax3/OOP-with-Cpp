@@ -19,7 +19,7 @@ namespace OWC
 		: m_ILD(ILD)
 	{
 		m_UniformBuffer = Graphics::UniformBuffer::CreateUniformBuffer(sizeof(f32) * 2);
-		m_Image = Graphics::TextureBuffer::CreateTextureBuffer(1, 1);
+		m_Image = Graphics::DynamicTextureBuffer::CreateDynamicTextureBuffer(1, 1);
 		std::vector<Vec4> emptyImageData = { Vec4(0.0f) };
 		m_Image->UpdateBufferData(emptyImageData);
 		SetupPipeline();
@@ -50,14 +50,14 @@ namespace OWC
 		{
 			if (m_ILD->ImageUpdates[1] && m_ILD->imageWidth > 0 && m_ILD->imageHeight > 0) // image resize
 			{
-				m_Image = TextureBuffer::CreateTextureBuffer(m_ILD->imageWidth, m_ILD->imageHeight);
+				m_Image = DynamicTextureBuffer::CreateDynamicTextureBuffer(m_ILD->imageWidth, m_ILD->imageHeight);
 				m_Image->UpdateBufferData(m_ILD->imageData);
 				SetupPipeline();
 				SetupRenderPass();
 			}
 			else if (m_ILD->imageWidth == 0 || m_ILD->imageHeight == 0) // clear image
 			{
-				m_Image = TextureBuffer::CreateTextureBuffer(1, 1);
+				m_Image = DynamicTextureBuffer::CreateDynamicTextureBuffer(1, 1);
 				std::vector<Vec4> emptyImageData = { Vec4(0.0f) };
 				m_Image->UpdateBufferData(emptyImageData);
 				SetupPipeline();
@@ -111,7 +111,7 @@ namespace OWC
 		m_renderPass = Renderer::BeginPass();
 		Renderer::PipelineBind(m_renderPass, *m_Shader);
 		Renderer::BindUniform(m_renderPass, *m_Shader);
-		Renderer::BindTexture(m_renderPass, *m_Shader, 1, 0);
+		Renderer::BindDynamicTexture(m_renderPass, *m_Shader, 1, 0);
 		Renderer::Draw(m_renderPass, numberOfVertices);
 		Renderer::EndPass(m_renderPass);
 	}
@@ -152,6 +152,6 @@ namespace OWC
 
 		m_Shader = BaseShader::CreateShader(shaderDatas);
 		m_Shader->BindUniform(0, m_UniformBuffer);
-		m_Shader->BindTexture(1, m_Image);
+		m_Shader->BindDynamicTexture(1, m_Image);
 	}
 }

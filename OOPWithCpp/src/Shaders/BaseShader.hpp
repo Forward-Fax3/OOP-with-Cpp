@@ -80,6 +80,7 @@ namespace OWC::Graphics
 
 		virtual void BindUniform(u32 binding, const std::shared_ptr<UniformBuffer>& uniformBuffer) = 0;
 		virtual void BindTexture(u32 binding, const std::shared_ptr<TextureBuffer>& textureBuffer) = 0;
+		virtual void BindDynamicTexture(u32 binding, const std::shared_ptr<DynamicTextureBuffer>& dTextureBuffer) = 0;
 
 		static std::unique_ptr<BaseShader> CreateShader(const std::span<ShaderData>& shaderDatas);
 	};
