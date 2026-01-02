@@ -7,19 +7,19 @@
 
 namespace OWC
 {
-	std::unique_ptr<BaseScene> BaseScene::CreateScene(Scene scene, std::vector<Vec4>& frameBuffer)
+	std::unique_ptr<BaseScene> BaseScene::CreateScene(Scene scene)
 	{
 		switch (scene)
 		{
 		case Scene::Basic:
-			return std::make_unique<BasicScene>(frameBuffer);
-		case Scene::RandTest:
-			return std::make_unique<RandTestScene>(frameBuffer);
+			return std::make_unique<BasicScene>();
+//		case Scene::RandTest:
+//			return std::make_unique<RandTestScene>();
 		case Scene::DuelGraySpheres:
-			return std::make_unique<DuelGraySpheres>(frameBuffer);
+			return std::make_unique<DuelGraySpheres>();
 		default:
 			// Return Basic scene as default
-			return std::make_unique<BasicScene>(frameBuffer);
+			return std::make_unique<BasicScene>();
 		}
 	}
 }

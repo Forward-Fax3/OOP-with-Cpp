@@ -1,4 +1,5 @@
 ﻿#pragma once
+/*
 #include "Scene.hpp"
 
 
@@ -38,3 +39,4 @@ namespace OWC
 		RenderMode m_RenderMode = RenderMode::RandomColorVec2;
     };
 }
+*/

@@ -16,8 +16,11 @@ namespace OWC
 	CPURayTracer::CPURayTracer(const std::shared_ptr<InterLayerData>& interLayerData)
 		: m_InterLayerData(interLayerData)
 	{
-		m_Scene = BaseScene::CreateScene(Scene::Basic, m_InterLayerData->imageData);
-		m_InterLayerData->numberOfSamples = 1;
+		m_Camera = std::make_unique<RTCamera>(m_InterLayerData->imageData);
+		m_Camera->GetSettings().ScreenSize = Vec2(Application::GetConstInstance().GetWindowSize());
+		m_CameraSettingsUpdated = true;
+		m_Scene = BaseScene::CreateScene(Scene::Basic);
+		m_InterLayerData->numberOfSamples = 1; // Start at 1 to avoid division by zero
 	}
 
 	void CPURayTracer::OnUpdate()
@@ -35,6 +38,9 @@ namespace OWC
 
 		if (m_ToggleRaytracedImage && m_RayTracingStateUpdated)
 		{
+			m_Scene->SetBaseCameraSettings(m_Camera->GetSettings());
+			m_CameraSettingsUpdated = true;
+
 			m_InterLayerData->imageData.clear();
 			m_InterLayerData->imageScreenSize = Application::GetConstInstance().GetWindowSize();
 			m_InterLayerData->imageData.resize(m_InterLayerData->GetNumberOfPixels<uSize>());
@@ -42,18 +48,20 @@ namespace OWC
 			m_InterLayerData->ImageUpdates |= 0b10;
 		}
 
-		if (RenderPassReturnData updateImage = m_Scene->RenderNextPass(); updateImage.frameBufferUpdated)
+		if (m_CameraSettingsUpdated)
 		{
-			if (updateImage.frameNeedsReset)
-			{
-				for (auto& pixel : m_InterLayerData->imageData)
-					pixel = Vec4(0.0f);
-				m_InterLayerData->numberOfSamples = 0;
-			}
-			else
-			{
-				m_InterLayerData->numberOfSamples++;
-			}
+			m_Camera->UpdateCameraSettings();
+
+			for (auto& pixel : m_InterLayerData->imageData)
+				pixel = Vec4(0.0f);
+
+			m_InterLayerData->numberOfSamples = 0;
+			m_CameraSettingsUpdated = false;
+		}
+
+		if (m_Camera->SingleThreadedRenderPass(m_Scene->GetHitable()))
+		{
+			m_InterLayerData->numberOfSamples++;
 			m_InterLayerData->ImageUpdates |= 0b01;
 		}
 	}
@@ -69,9 +77,9 @@ namespace OWC
 			"BT. 1886",
 			"Custom"
 		};
-		constexpr std::array<const char*, 3> sceneNames = {
+		constexpr std::array<const char*, 2> sceneNames = {
 			"Basic",
-			"RandTest", 
+//			"RandTest", 
 			"DuelGraySpheres"
 		};
 
@@ -85,9 +93,13 @@ namespace OWC
 			if (ImGui::Combo("Scene", &m_CurrentSceneIndex, sceneNames.data(), static_cast<i32>(sceneNames.size())))
 			{
 				auto selectedScene = static_cast<Scene>(m_CurrentSceneIndex);
-				m_Scene = BaseScene::CreateScene(selectedScene, m_InterLayerData->imageData);
+				m_Scene = BaseScene::CreateScene(selectedScene);
+				m_Scene->SetBaseCameraSettings(m_Camera->GetSettings());
+				m_CameraSettingsUpdated = true;
+
 				m_InterLayerData->numberOfSamples = 0;
 				m_InterLayerData->ImageUpdates |= 0b01;
+
 				for (auto& pixel : m_InterLayerData->imageData)
 					pixel = Vec4(0.0f);
 			}
@@ -103,6 +115,12 @@ namespace OWC
 			if (static_cast<GammaCorrection>(m_CurrentGammaIndex) == GammaCorrection::custom && ImGui::InputFloat("Custom Gamma Value", &m_CustomGammaValue))
 				m_InterLayerData->invGammaValue = 1.0f / m_CustomGammaValue;
 
+			if (ImGui::Button("Reset Camera Position"))
+			{
+				m_Scene->SetBaseCameraSettings(m_Camera->GetSettings());
+				m_CameraSettingsUpdated = true;
+			}
+
 			bool useCustomResolutionUpdated = ImGui::Checkbox("Use Window Resolution", &m_UseWindowResolution);
 
 			if (!m_UseWindowResolution)
@@ -110,16 +128,17 @@ namespace OWC
 				Vec2i customResolution(m_InterLayerData->imageScreenSize);
 				useCustomResolutionUpdated |= ImGui::InputInt2("Image Resolution", glm::value_ptr(customResolution));
 
-
 				if (useCustomResolutionUpdated)
 				{
 					customResolution = glm::max(customResolution, Vec2i(1));
+					customResolution = glm::min(customResolution, Vec2i(8192)); // Arbitrary max resolution to avoid OOM
 					m_InterLayerData->imageScreenSize = customResolution;
 					m_InterLayerData->imageData.clear();
 					m_InterLayerData->imageData.resize(m_InterLayerData->GetNumberOfPixels<uSize>());
 					m_InterLayerData->numberOfSamples = 0;
 					m_InterLayerData->ImageUpdates |= 0b10;
-					m_Scene->UpdateScreenSize(m_InterLayerData->imageScreenSize);
+					m_Camera->GetSettings().ScreenSize = Vec2(customResolution);
+					m_CameraSettingsUpdated = true;
 				}
 			}
 			else if (useCustomResolutionUpdated)
@@ -129,13 +148,22 @@ namespace OWC
 				m_InterLayerData->imageData.resize(m_InterLayerData->GetNumberOfPixels<uSize>());
 				m_InterLayerData->numberOfSamples = 0;
 				m_InterLayerData->ImageUpdates |= 0b10;
-				m_Scene->UpdateScreenSize(m_InterLayerData->imageScreenSize);
+				m_Camera->GetSettings().ScreenSize = Vec2(m_InterLayerData->imageScreenSize);
+				m_CameraSettingsUpdated = true;
 			}
 		}
 		ImGui::End();
 
-		if (m_ToggleRaytracedImage)
-			m_Scene->OnImGuiRender();
+		// Render Scene Specific ImGui
+
+		CameraRenderSettings& cameraSettings = m_Camera->GetSettings();
+
+		ImGui::Begin("Camera Settings");
+		m_CameraSettingsUpdated |= ImGui::DragFloat3("Position", glm::value_ptr(cameraSettings.Position), 0.1f);
+		m_CameraSettingsUpdated |= ImGui::DragFloat3("Rotation", glm::value_ptr(cameraSettings.Rotation), 0.1f);
+		m_CameraSettingsUpdated |= ImGui::DragFloat("FOV", &cameraSettings.FOV, 0.1f, 1.0f, 89.0f);
+		m_CameraSettingsUpdated |= ImGui::DragFloat("Focal Length", &cameraSettings.FocalLength, 0.1f, 0.1f, 100.0f);
+		ImGui::End();
 	}
 
 	void CPURayTracer::OnEvent(BaseEvent& e)
@@ -152,7 +180,8 @@ namespace OWC
 			pixelArray.resize(this->m_InterLayerData->GetNumberOfPixels<uSize>());
 			this->m_InterLayerData->numberOfSamples = 0;
 			this->m_InterLayerData->ImageUpdates |= 0b10;
-			this->m_Scene->UpdateScreenSize(this->m_InterLayerData->imageScreenSize);
+			this->m_Camera->GetSettings().ScreenSize = Vec2(this->m_InterLayerData->imageScreenSize);
+			this->m_CameraSettingsUpdated = true;
 			return false;
 		});
 	}

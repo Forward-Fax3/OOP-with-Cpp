@@ -8,48 +8,49 @@
 
 namespace OWC
 {
+	using RenderPassReturnData = bool;
+
+	struct CameraRenderSettings
+	{
+		Vec3 Position{ 0.0f };
+		Vec3 Rotation{ 0.0f };
+
+		Vec2 ScreenSize{ 800.0f, 600.0f };
+
+		f32 FOV = 30.0f;
+		f32 FocalLength = 5.0f;
+		Vec3 Vup{ 0.0f, 1.0f, 0.0f };
+
+		uSize NumberOfSamplesPerPass = 1;
+		uSize MaxBounces = 5;
+	};
+
 	class RTCamera
 	{
 	public:
 		RTCamera() = delete;
-		explicit RTCamera(const std::shared_ptr<BaseHittable>& hittables, std::vector<Colour>& pixels);
+		explicit RTCamera(std::vector<Colour>& pixels) : m_Pixels(pixels) {}
 
-		OWC_FORCE_INLINE void SetRotate(const Vec3& eulerAngles) { m_Rotation = eulerAngles; m_PositionNeedsUpdating = true; }
-		OWC_FORCE_INLINE void SetPosition(const Vec3& position) { m_Position = position; m_PositionNeedsUpdating = true; }
-		OWC_FORCE_INLINE void SetScreenSize(const Vec2& size) { m_ScreenSize = size; m_PositionNeedsUpdating = true; }
-		OWC_FORCE_INLINE void SetFOV(const f32 fov) { m_FOV = fov; m_PositionNeedsUpdating = true; }
-		OWC_FORCE_INLINE void SetVup(const Vec3& vup) { m_Vup = vup; m_PositionNeedsUpdating = true; }
-		OWC_FORCE_INLINE void SetFocalLength(const f32 focalLength) { m_FocalLength = focalLength; m_PositionNeedsUpdating = true; }
+		OWC_FORCE_INLINE CameraRenderSettings& GetSettings() { return m_Settings; }
 
-		OWC_FORCE_INLINE void SetNumberOfSamplesPerPass(const uSize samples) { m_NumberOfSamplesPerPass = samples; }
+		RenderPassReturnData SingleThreadedRenderPass(const std::shared_ptr<BaseHittable>& hittables);
+//		RenderPassReturnData MultiThreadedRenderPass(const std::shared_ptr<BaseHittable>& hittables);
 
-		void SingleThreadedRenderPass();
-//		void MultiThreadedRenderPass();
+		void UpdateCameraSettings();
 
 	private:
-		void CreateViewMatrix();
 		Ray CreateRay(uSize i, uSize j) const;
 
-		Colour RayColour(Ray ray);
+		Colour RayColour(Ray ray, const std::shared_ptr<BaseHittable>& hittables);
 
 	private:
-		Vec3 m_Position{ 0.0f };
-		Vec3 m_Rotation{ 0.0f };
-		Vec3 m_Vup{ 0.0f, 1.0f, 0.0f };
-		Vec3 m_PixelDeltaU{};
-		Vec3 m_PixelDeltaV{};
-		Point m_Pixel100Location{};
-		Vec2 m_ScreenSize{};
-		f32 m_FocalLength = 5.0f;
-		f32 m_FOV = 30.0f;
+		CameraRenderSettings m_Settings;
 
-		bool m_PositionNeedsUpdating = false;
-
-		uSize m_NumberOfSamplesPerPass = 1;
-		uSize m_MaxBounces = 5;
+		Point m_Pixel100Location = Point(0.0f);
+		Vec3 m_PixelDeltaU = Vec3(0.0f);
+		Vec3 m_PixelDeltaV = Vec3(0.0f);
 
 		std::vector<Colour>& m_Pixels;
 		std::vector<Colour> m_BouncedColours;
-		std::shared_ptr<BaseHittable> m_Hittables;
 	};
 }

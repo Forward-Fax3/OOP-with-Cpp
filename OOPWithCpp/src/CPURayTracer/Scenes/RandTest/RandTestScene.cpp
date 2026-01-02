@@ -1,4 +1,5 @@
-﻿#include "RandTestScene.hpp"
+﻿/*
+#include "RandTestScene.hpp"
 #include "OWCRand.hpp"
 
 #include "BaseEvent.hpp"
@@ -138,3 +139,4 @@ namespace OWC
 		}
 	}
 }
+*/

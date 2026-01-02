@@ -11,53 +11,43 @@
 
 namespace OWC
 {
-	RTCamera::RTCamera(const std::shared_ptr<BaseHittable>& hittables, std::vector<Colour>& pixels)
-		: m_Pixels(pixels), m_Hittables(hittables)
+	RenderPassReturnData RTCamera::SingleThreadedRenderPass(const std::shared_ptr<BaseHittable>& hittables)
 	{
-		const auto& app = Application::GetConstInstance();
-		SetScreenSize(Vec2(static_cast<f32>(app.GetWindowWidth()), static_cast<f32>(app.GetWindowHeight())));
-	}
-
-	void RTCamera::SingleThreadedRenderPass()
-	{
-		if (m_PositionNeedsUpdating)
-			CreateViewMatrix();
-
-		Vec2us screenSize(m_ScreenSize);
+		Vec2us screenSize(m_Settings.ScreenSize);
 
 		for (uSize i = 0; i != screenSize.y; i++)
 			for (uSize j = 0; j != screenSize.x; j++)
-				for (uSize k = 0; k != m_NumberOfSamplesPerPass; k++)
+				for (uSize k = 0; k != m_Settings.NumberOfSamplesPerPass; k++)
 				{
 					Ray ray = CreateRay(i, j);
-					m_Pixels[(i * screenSize.x) + j] += RayColour(ray);
+					m_Pixels[(i * screenSize.x) + j] += RayColour(ray, hittables);
 				}
+
+		return true;
 	}
 
-	void RTCamera::CreateViewMatrix()
+	void RTCamera::UpdateCameraSettings()
 	{
-		m_BouncedColours.resize(m_MaxBounces + 1); // +1 for lost ray colour
+		m_BouncedColours.resize(m_Settings.MaxBounces + 1); // +1 for lost ray colour
 
-		Vec3 rotationInRadians = glm::radians(m_Rotation);
+		Vec3 rotationInRadians = glm::radians(m_Settings.Rotation);
 		Mat4 rotationMatrix = glm::eulerAngleYXZ(rotationInRadians.y, rotationInRadians.x, rotationInRadians.z);
-		Vec3 forward = glm::normalize(Vec3(rotationMatrix * Vec4(0.0f, 0.0f, 1.0f, 0.0f)));
+		Vec3 forward = glm::normalize(Vec3(rotationMatrix * Vec4(0.0f, 0.0f, -1.0f, 0.0f)));
 		Vec3 right = glm::normalize(Vec3(rotationMatrix * Vec4(1.0f, 0.0, 0.0, 0.0)));
 		Vec3 up = glm::normalize(Vec3(rotationMatrix * Vec4(0.0f, -1.0, 0.0, 0.0)));
 
-		f32 aspectRatio = m_ScreenSize.x / m_ScreenSize.y;
-		f32 viewportHeight = 2.0f * m_FocalLength * glm::tan(glm::radians(m_FOV) * 0.5f);
+		f32 aspectRatio = m_Settings.ScreenSize.x / m_Settings.ScreenSize.y;
+		f32 viewportHeight = 2.0f * m_Settings.FocalLength * glm::tan(glm::radians(m_Settings.FOV) * 0.5f);
 		f32 viewportWidth = aspectRatio * viewportHeight;
 
 		Point viewportU = viewportWidth * right;
 		Point viewportV = viewportHeight * -up;
 
-		m_PixelDeltaU = viewportU / m_ScreenSize.x;
-		m_PixelDeltaV = viewportV / m_ScreenSize.y;
+		m_PixelDeltaU = viewportU / m_Settings.ScreenSize.x;
+		m_PixelDeltaV = viewportV / m_Settings.ScreenSize.y;
 
-		Point viewportUpperLeft = m_Position - (m_FocalLength * forward) - 0.5f * (viewportU + viewportV);
+		Point viewportUpperLeft = m_Settings.Position - (m_Settings.FocalLength * forward) - 0.5f * (viewportU + viewportV);
 		m_Pixel100Location = viewportUpperLeft + 0.5f * (m_PixelDeltaU + m_PixelDeltaV);
-		
-		m_PositionNeedsUpdating = false;
 	}
 
 	Ray RTCamera::CreateRay(uSize i, uSize j) const
@@ -67,17 +57,17 @@ namespace OWC
 			(randomOffset.x * m_PixelDeltaU) +
 			(randomOffset.y * m_PixelDeltaV);
 
-		return Ray(m_Position, rayDirection);
+		return Ray(m_Settings.Position, rayDirection);
 	}
 
-	Colour RTCamera::RayColour(Ray ray)
+	Colour RTCamera::RayColour(Ray ray, const std::shared_ptr<BaseHittable>& hittables)
 	{
 		bool missed = false;
 		uSize i = 0;
 
-		for (; i != m_MaxBounces; i++)
+		for (; i != m_Settings.MaxBounces; i++)
 		{
-			HitData hitData = m_Hittables->IsHit(ray);
+			HitData hitData = hittables->IsHit(ray);
 			if (!hitData.hasHit)
 			{
 				f32 t = 0.5f * (ray.GetDirection().y + 1.0f);
@@ -90,9 +80,9 @@ namespace OWC
 			hitData.material->Scatter(ray, hitData);
 		}
 
-		if (i == m_MaxBounces)
+		if (i == m_Settings.MaxBounces)
 		{
-			m_BouncedColours[m_MaxBounces] = Colour(0.0f);
+			m_BouncedColours[m_Settings.MaxBounces] = Colour(0.0f);
 			missed = true;
 		}
 

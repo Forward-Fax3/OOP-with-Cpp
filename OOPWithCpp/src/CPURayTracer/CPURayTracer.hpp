@@ -4,6 +4,7 @@
 #include "InterLayerData.hpp"
 #include "ImageLoader.hpp"
 #include "Scene.hpp"
+#include "Camera.hpp"
 
 #include <memory>
 #include <bitset>
@@ -46,11 +47,13 @@ namespace OWC
 		bool m_RayTracingStateUpdated = false;
 		bool m_ToggleRaytracedImage = false;
 		bool m_UseWindowResolution = true;
+		bool m_CameraSettingsUpdated = true;
 
 		i32	m_CurrentSceneIndex = 0;
 		i32	m_CurrentGammaIndex = 3; // Default to Gamma 2.2
 		f32 m_CustomGammaValue = 2.2f;
 
-		std::unique_ptr<BaseScene> m_Scene;
+		std::unique_ptr<BaseScene> m_Scene = nullptr;
+		std::unique_ptr<RTCamera> m_Camera = nullptr;
 	};
 }
