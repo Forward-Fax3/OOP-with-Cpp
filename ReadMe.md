@@ -17,6 +17,7 @@ The project uses Premake to generate Visual Studio solutions with multiple SIMD 
 ## CPU Ray Tracer Features
 - spheres at the moment
 - basic materials (diffuse)
+- single and multi-threaded rendering
 - scenes
 	- single red sphere
 	- 2 gray spheres
