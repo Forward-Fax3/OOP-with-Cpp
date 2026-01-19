@@ -17,7 +17,7 @@ namespace OWC
 
 	bool Lambertian::Scatter(Ray& ray, const HitData& hitData) const
 	{
-		Vec3 scatterDirection = hitData.normal + Rand::FastUnitVecctor();
+		Vec3 scatterDirection = hitData.normal + Rand::FastUnitVector();
 
 		ray.SetOrigin(hitData.point);
 		if (scatterDirection < 1e-8f)

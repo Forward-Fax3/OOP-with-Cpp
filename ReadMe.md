@@ -1,4 +1,4 @@
-# OOPWithCpp
+﻿# OOPWithCpp
 
 C++ sandbox/learning project focused on OOP-style architecture with a Vulkan renderer and an SDL3 + Dear ImGui application layer. Then a CPU Ray Tracer implementation is added as a secondary rendering backend which sends renderd Images to the Vulkan renderer for display.
 The project uses Premake to generate Visual Studio solutions with multiple SIMD builds (SSE4.2, AVX2, AVX512). All SIMD builds must be built as the StartProj will link against them based on CPU detection at runtime.
@@ -16,12 +16,13 @@ The project uses Premake to generate Visual Studio solutions with multiple SIMD 
 
 ## CPU Ray Tracer Features
 - spheres at the moment
-- basic materials (diffuse, dielectric)
+- basic materials (diffuse, metal, dielectric)
 - single and multi-threaded rendering
 - scenes
 	- single red sphere
 	- 2 grey spheres
 	- Dielectric Test
+	- Metal Test
 
 ## Repository Layout
 - `OOPWithCpp/` — main library/source
