@@ -17,12 +17,14 @@ The project uses Premake to generate Visual Studio solutions with multiple SIMD 
 ## CPU Ray Tracer Features
 - spheres at the moment
 - basic materials (diffuse, metal, dielectric)
+- diffuse light sources
 - single and multi-threaded rendering
 - scenes
 	- single red sphere
 	- 2 grey spheres
 	- Dielectric Test
 	- Metal Test
+	- earth
 
 ## Repository Layout
 - `OOPWithCpp/` — main library/source
