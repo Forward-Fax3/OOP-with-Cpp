@@ -12,8 +12,14 @@ namespace OWC
 	DielectricTest::DielectricTest()
 	{
 		m_SceneObjects = std::make_shared<Hitables>();
-		m_Hittable = m_SceneObjects;
 		m_SceneObjects->Reserve(8);
+		m_SceneObjects->SetBackgroundFunction([this](const Ray& ray)
+			{
+				constexpr f32 tScale = 3.0f / 4.0f;
+				return this->m_SceneObjects->BaseHittable::BackgroundColour(ray) * tScale;
+			});
+
+		m_Hittable = m_SceneObjects;
 
 		// Ground
 		{
@@ -23,7 +29,7 @@ namespace OWC
 		}
 		// the sun
 		{
-			auto sunMaterial = std::make_shared<DefusedLight>(Colour(1.0f, 1.0f, 1.0f, 1.0f), 5.0f);
+			auto sunMaterial = std::make_shared<DefusedLight>(Colour(1.0f, 1.0f, 1.0f, 1.0f), 25.0f);
 			auto sunSphere = std::make_shared<Sphere>(Point(50.0f, -50.0f, -50.0f), 10.0f, sunMaterial);
 			m_SceneObjects->AddObject(sunSphere);
 		}

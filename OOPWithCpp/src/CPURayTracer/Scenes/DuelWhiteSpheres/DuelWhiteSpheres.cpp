@@ -7,6 +7,8 @@
 #include "Sphere.hpp"
 #include "Lambertian.hpp"
 
+#include "DefusedLight.hpp"
+
 #include "BaseEvent.hpp"
 #include "WindowResize.hpp"
 
@@ -20,14 +22,34 @@ namespace OWC
 	DuelGraySpheres::DuelGraySpheres()
 	{
 		m_SceneObjects = std::make_shared<Hitables>();
+		m_SceneObjects->Reserve(3);
+		m_SceneObjects->SetBackgroundFunction([](const Ray& ray)
+			{
+				constexpr f32 scale = 0.4f;
+				f32 t = 0.5f * (ray.GetDirection().y + 1.0f);
+				return (1.0f - t) + t * Colour(0.5f, 0.7f, 1.0f, 1.0f) * scale;
+			});
+
 		m_SceneObject = m_SceneObjects;
-		m_SceneObjects->Reserve(2);
 
 		auto gray = std::make_shared<Lambertian>(Colour(0.5f));
-		auto smallSphere = std::make_shared<Sphere>(Vec3(0.0f), 1.0f, gray);
-		auto bigSphere = std::make_shared<Sphere>(Vec3(0.0f, 51.0f, 0.0f), 50.0f, gray);
-		m_SceneObjects->AddObject(smallSphere);
-		m_SceneObjects->AddObject(bigSphere);
+
+		// small sphere
+		{
+			auto smallSphere = std::make_shared<Sphere>(Vec3(0.0f), 1.0f, gray);
+			m_SceneObjects->AddObject(smallSphere);
+		}
+		// big sphere
+		{
+			auto bigSphere = std::make_shared<Sphere>(Vec3(0.0f, 51.0f, 0.0f), 50.0f, gray);
+			m_SceneObjects->AddObject(bigSphere);
+		}
+		// sun
+		{
+			auto sunMaterial = std::make_shared<DefusedLight>(Colour(1.0f), 50.0f);
+			auto sunSphere = std::make_shared<Sphere>(Point(50.0f, -50.0f, -50.0f), 10.0f, sunMaterial);
+			m_SceneObjects->AddObject(sunSphere);
+		}
 	}
 
 	void DuelGraySpheres::SetBaseCameraSettings(CameraRenderSettings& cameraSettings) const

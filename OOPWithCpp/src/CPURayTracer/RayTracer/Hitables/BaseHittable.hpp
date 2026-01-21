@@ -269,6 +269,12 @@ namespace OWC
 		BaseHittable& operator=(BaseHittable&&) = delete;
 
 		virtual HitData __vectorcall IsHit(const Ray& ray, const Interval& range) const = 0;
+
+		virtual Colour BackgroundColour(const Ray& ray) const
+		{
+			f32 t = 0.5f * (ray.GetDirection().y + 1.0f);
+			return (1.0f - t) + t * Colour(0.5f, 0.7f, 1.0f, 1.0f);
+		}
 	};
 }
 

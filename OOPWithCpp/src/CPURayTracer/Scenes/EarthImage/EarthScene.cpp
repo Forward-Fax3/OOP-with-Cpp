@@ -13,8 +13,13 @@ namespace OWC
 	EarthScene::EarthScene()
 	{
 		m_SceneObjects = std::make_shared<Hitables>();
-		m_Hittable = m_SceneObjects;
 		m_SceneObjects->Reserve(2);
+		m_SceneObjects->SetBackgroundFunction([](const Ray&)
+		{
+			return Colour(0.0f); // black background
+		});
+
+		m_Hittable = m_SceneObjects;
 
 		// Load Earth sphere
 		{
@@ -24,7 +29,7 @@ namespace OWC
 		}
 		// sun
 		{
-			auto sunMaterial = std::make_shared<DefusedLight>(Colour(1.0f), 5.0f);
+			auto sunMaterial = std::make_shared<DefusedLight>(Colour(1.0f), 500.0f);
 			auto sunSphere = std::make_shared<Sphere>(Point(50.0f, -50.0f, -50.0f), 10.0f, sunMaterial);
 			m_SceneObjects->AddObject(sunSphere);
 		}

@@ -182,10 +182,9 @@ namespace OWC
 			Interval tRange(0.001f, std::numeric_limits<f32>::max());
 			HitData hitData = hittables->IsHit(ray, tRange);
 			if (!hitData.hasHit)
-			{ // TODO: chage background to std::function for customisable backgrounds
-				f32 t = 0.5f * (ray.GetDirection().y + 1.0f);
+			{
 				m_BouncedColours[bouncedColoursOffset + i][0] = Colour(0.0f);
-				m_BouncedColours[bouncedColoursOffset + i][1] = (1.0f - t) + t * Colour(0.5f, 0.7f, 1.0f, 1.0f) * 0.5f;
+				m_BouncedColours[bouncedColoursOffset + i][1] = hittables->BackgroundColour(ray);
 				missed = true;
 				break;
 			}

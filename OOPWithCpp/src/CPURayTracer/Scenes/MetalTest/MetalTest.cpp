@@ -11,8 +11,15 @@ namespace OWC
 	MetalTest::MetalTest()
 	{
 		m_SceneObjects = std::make_shared<Hitables>();
-		m_Hittable = m_SceneObjects;
 		m_SceneObjects->Reserve(8);
+		m_SceneObjects->SetBackgroundFunction([](const Ray& ray)
+			{
+				constexpr f32 scale = 0.4f;
+				f32 t = 0.5f * (ray.GetDirection().y + 1.0f);
+				return (1.0f - t) + t * Colour(0.5f, 0.7f, 1.0f, 1.0f) * scale;
+			});
+
+		m_Hittable = m_SceneObjects;
 		const Colour metalColour(0.8f, 0.2f, 0.1f, 1.0f);
 
 		// Ground
