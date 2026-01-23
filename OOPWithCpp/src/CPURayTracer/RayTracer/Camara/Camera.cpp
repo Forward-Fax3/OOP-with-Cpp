@@ -234,10 +234,6 @@ namespace OWC
 				{
 					Ray ray = CreateRay(pixel / screenSize.x, pixel % screenSize.x);
 
-					// break when ray is in the center of the screen
-//					if (pixel / screenSize.x == screenSize.y / 2 && pixel % screenSize.x == screenSize.x / 2)
-//						__debugbreak();
-
 					m_SampleAccumulationBuffer[pixel] += RayColour(ray, bouncedColoursOffset, data.Hittables);
 				}
 		}
