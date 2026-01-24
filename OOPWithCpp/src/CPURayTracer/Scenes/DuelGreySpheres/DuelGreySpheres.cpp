@@ -1,6 +1,5 @@
 ﻿#include "Core.hpp"
-#include "Application.hpp"
-#include "DuelWhiteSpheres.hpp"
+#include "DuelGreySpheres.hpp"
 
 #include "Hittables.hpp"
 #include "SplitBVH.hpp"
@@ -9,17 +8,10 @@
 #include "Lambertian.hpp"
 #include "DefusedLight.hpp"
 
-#include "BaseEvent.hpp"
-#include "WindowResize.hpp"
-
-#include <imgui.h>
-
-#include <glm/gtc/type_ptr.hpp>
-
 
 namespace OWC
 {
-	DuelGraySpheres::DuelGraySpheres()
+	DuelGreySpheres::DuelGreySpheres()
 	{
 		m_SceneObjects = std::make_shared<Hitables>();
 		m_SceneObjects->Reserve(3);
@@ -30,16 +22,16 @@ namespace OWC
 				return (1.0f - t) + t * Colour(0.5f, 0.7f, 1.0f, 1.0f) * scale;
 			});
 
-		auto gray = std::make_shared<Lambertian>(Colour(0.5f));
+		auto grey = std::make_shared<Lambertian>(Colour(0.5f));
 
 		// small sphere
 		{
-			auto smallSphere = std::make_shared<Sphere>(Vec3(0.0f), 1.0f, gray);
+			auto smallSphere = std::make_shared<Sphere>(Vec3(0.0f), 1.0f, grey);
 			m_SceneObjects->AddObject(smallSphere);
 		}
 		// big sphere
 		{
-			auto bigSphere = std::make_shared<Sphere>(Vec3(0.0f, 51.0f, 0.0f), 50.0f, gray);
+			auto bigSphere = std::make_shared<Sphere>(Vec3(0.0f, 51.0f, 0.0f), 50.0f, grey);
 			m_SceneObjects->AddObject(bigSphere);
 		}
 		// sun
@@ -53,7 +45,7 @@ namespace OWC
 //		m_SceneObject = m_SceneObjects;
 	}
 
-	void DuelGraySpheres::SetBaseCameraSettings(CameraRenderSettings& cameraSettings) const
+	void DuelGreySpheres::SetBaseCameraSettings(CameraRenderSettings& cameraSettings) const
 	{
 		cameraSettings.Position = Point(0.0f, 0.0f, -5.0f);
 		cameraSettings.Rotation = Vec3(0.0f);

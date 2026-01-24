@@ -1,8 +1,6 @@
 ﻿#pragma once
 #include "Core.hpp"
 
-#include "Log.hpp"
-
 #pragma warning(push)
 #pragma warning(disable: 4324) // structure was padded due to alignment specifier
 

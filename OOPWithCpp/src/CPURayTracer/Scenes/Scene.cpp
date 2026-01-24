@@ -1,8 +1,7 @@
 ﻿#include "Core.hpp"
 #include "Scene.hpp"
 #include "BasicScene.hpp"
-#include "RandTestScene.hpp"
-#include "DuelWhiteSpheres.hpp"
+#include "DuelGreySpheres.hpp"
 #include "DielectricTest.hpp"
 #include "MetalTest.hpp"
 #include "EarthScene.hpp"
@@ -17,10 +16,8 @@ namespace OWC
 		{
 		case Scene::Basic:
 			return std::make_unique<BasicScene>();
-//		case Scene::RandTest:
-//			return std::make_unique<RandTestScene>();
-		case Scene::DuelGraySpheres:
-			return std::make_unique<DuelGraySpheres>();
+		case Scene::DuelGreySpheres:
+			return std::make_unique<DuelGreySpheres>();
 		case Scene::DielectricTest:
 			return std::make_unique<DielectricTest>();
 		case Scene::MetalTest:

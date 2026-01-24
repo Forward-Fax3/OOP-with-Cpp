@@ -55,8 +55,8 @@ namespace OWC
 		}
 		// Ground
 		{
-			material =  std::make_shared<Lambertian>(std::make_shared<SolidTexture>(Colour(0.5f, 0.5f, 0.5f, 1.0f)));
-			m_SceneObjects->AddObject(std::make_shared<Sphere>(Point(0.0f, 1000.0f, 0.0f), 999.8f, material));
+			material =  std::make_shared<Lambertian>(std::make_shared<SolidTexture>(Colour(0.4f, 0.5f, 0.4f, 1.0f)));
+			m_SceneObjects->AddObject(std::make_shared<Sphere>(Point(0.0f, 1000.0f, 0.0f), 999.7f, material));
 		}
 
 		for (size_t i = 0; i < numRandomSpheres; i++)

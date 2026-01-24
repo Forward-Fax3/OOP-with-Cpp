@@ -7,16 +7,16 @@
 
 namespace OWC
 {
-	class DuelGraySpheres : public BaseScene
+	class DuelGreySpheres : public BaseScene
 	{
 	public:
-		DuelGraySpheres();
-		~DuelGraySpheres() override = default;
+		DuelGreySpheres();
+		~DuelGreySpheres() override = default;
 
-		DuelGraySpheres(const DuelGraySpheres&) = delete;
-		DuelGraySpheres& operator=(const DuelGraySpheres&) = delete;
-		DuelGraySpheres(DuelGraySpheres&&) = delete;
-		DuelGraySpheres& operator=(DuelGraySpheres&&) = delete;
+		DuelGreySpheres(const DuelGreySpheres&) = delete;
+		DuelGreySpheres& operator=(const DuelGreySpheres&) = delete;
+		DuelGreySpheres(DuelGreySpheres&&) = delete;
+		DuelGreySpheres& operator=(DuelGreySpheres&&) = delete;
 
 		void SetBaseCameraSettings(CameraRenderSettings& cameraSettings) const override;
 

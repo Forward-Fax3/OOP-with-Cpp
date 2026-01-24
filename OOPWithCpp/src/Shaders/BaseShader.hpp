@@ -44,7 +44,7 @@ namespace OWC::Graphics
 			SPV = SPIRV
 		};
 
-		std::string ShaderTypeToString() const
+		OWC_FORCE_INLINE std::string ShaderTypeToString() const
 		{
 			switch (type)
 			{

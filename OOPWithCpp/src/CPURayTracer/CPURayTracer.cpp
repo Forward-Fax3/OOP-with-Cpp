@@ -82,7 +82,7 @@ namespace OWC
 		constexpr std::array<const char*, 6> sceneNames = {
 			"Basic",
 //			"RandTest",
-			"DuelGraySpheres",
+			"DuelGreySpheres",
 			"DielectricTest",
 			"MetalTest",
 			"EarthScene",
@@ -188,7 +188,7 @@ namespace OWC
 		m_CameraSettingsUpdated |= ImGui::DragFloat3("Position", glm::value_ptr(cameraSettings.Position), 0.1f);
 		m_CameraSettingsUpdated |= ImGui::DragFloat3("Rotation", glm::value_ptr(cameraSettings.Rotation), 0.1f);
 		m_CameraSettingsUpdated |= ImGui::DragFloat("FOV", &cameraSettings.FOV, 0.1f, 1.0f, 89.0f);
-		m_CameraSettingsUpdated |= ImGui::DragFloat("Focal Length", &cameraSettings.FocalLength, 0.1f, 0.1f, 100.0f);
+		m_CameraSettingsUpdated |= ImGui::DragFloat("Focal Length", &cameraSettings.FocalLength, 0.1f, 0.1f, 8192.0f);
 		m_CameraSettingsUpdated |= ImGui::DragInt("Max Bounces", &cameraSettings.MaxBounces, 1.0f, minBouncesBeforeClamp, maxBouncesBeforeClamp);
 		ImGui::End();
 

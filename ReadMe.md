@@ -1,6 +1,6 @@
 ﻿# OOPWithCpp
 
-C++ sandbox/learning project focused on OOP-style architecture with a Vulkan renderer and an SDL3 + Dear ImGui application layer. Then a CPU Ray Tracer implementation is added as a secondary rendering backend which sends renderd Images to the Vulkan renderer for display.
+C++ sandbox/learning project focused on OOP-style architecture with a Vulkan renderer and an SDL3 + Dear ImGui application layer. Then a CPU Ray Tracer implementation as a the main rendering backend which sends renderd Images to the Vulkan renderer for display.
 The project uses Premake to generate Visual Studio solutions with multiple SIMD builds (SSE4.2, AVX2, AVX512). All SIMD builds must be built as the StartProj will link against them based on CPU detection at runtime.
 
 ## Features
@@ -19,12 +19,14 @@ The project uses Premake to generate Visual Studio solutions with multiple SIMD 
 - basic materials (diffuse, metal, dielectric)
 - diffuse light sources
 - single and multi-threaded rendering
+- simple split BVH acceleration structure
 - scenes
 	- single red sphere
 	- 2 grey spheres
 	- Dielectric Test
 	- Metal Test
 	- earth
+	- Ray Tracing in one weekend final render like scene
 
 ## Repository Layout
 - `OOPWithCpp/` — main library/source
@@ -45,11 +47,11 @@ The project uses Premake to generate Visual Studio solutions with multiple SIMD 
 3. Generate project files:
 4. Open a command prompt in the repo root and run:
    ```sh
-   premake5 vs2022
+   Premake5/Premake5.exe vs2022
    ```
    or for Visual Studio 2026:
    ```sh
-   premake5 vs2026
+   Premake5/Premake5.exe vs2026
    ```
 	or use the provided batch files:
    - `GenerateVS2022.bat`
@@ -57,7 +59,8 @@ The project uses Premake to generate Visual Studio solutions with multiple SIMD 
 
 ## Problems
 - You may need to run both `premake5 vs2022` and `premake5 vs2026` so that both the sln and slnx files are generated. For some reason, Premake does not want to generate the sln file when using the vs2026 action alone.
-- If you resize the window before you have enabled the ray tracer, it will not update the ray tracer's resolution. Therefor making the image look distorted, this can be fixed by moving the camera or resizing the window again after enabling the ray tracer.
+- If you resize the window before you have enabled the ray tracer, it will not update the ray tracer's resolution. Therefor making the image look distorted, this can be fixed by resizing the window again after enabling the ray tracer.
+- some times when moving the camera the whole program will soft lock up, this is due to a deadlock in the ray tracer's multi-threading implementation.
 
 ## Notes
 - This File has been created with the assistance of AI. Though I have reviewed and edited it.

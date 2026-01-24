@@ -5,7 +5,6 @@
 
 namespace OWC
 {
-
 	AABB::AABB(const Interval& interval)
 		: m_XInterval(interval), m_YInterval(interval), m_ZInterval(interval) { FinishIntervalSetup(); }
 
@@ -34,14 +33,6 @@ namespace OWC
 		FinishIntervalSetup();
 	}
 
-	AABB::AABB(const AABB& other)
-	{
-		m_XInterval = other.m_XInterval;
-		m_YInterval = other.m_YInterval;
-		m_ZInterval = other.m_ZInterval;
-		m_LongestAxis = other.m_LongestAxis;
-	}
-
 	bool AABB::IsBigger(const AABB& otherAABB) const
 	{
 		bool returnBool = true;
@@ -49,23 +40,6 @@ namespace OWC
 		returnBool &= this->m_YInterval.GetMin() <= otherAABB.m_YInterval.GetMin() && this->m_YInterval.GetMax() >= otherAABB.m_YInterval.GetMax();
 		returnBool &= this->m_ZInterval.GetMin() <= otherAABB.m_ZInterval.GetMin() && this->m_ZInterval.GetMax() >= otherAABB.m_ZInterval.GetMax();
 		return returnBool;
-	}
-
-	const OWC::Interval& AABB::GetAxisInterval(const Axis& axis) const
-	{
-		switch (axis)
-		{
-		using enum Axis;
-		case x:
-			return m_XInterval;
-		case y:
-			return m_YInterval;
-		case z:
-			return m_ZInterval;
-		case none:
-		default:
-			return Interval::Univers;
-		}
 	}
 
 	void AABB::Expand(const AABB& newAABB)

@@ -44,7 +44,6 @@ static bool AVX512Supported()
 
 static bool AVX2AndFMA3Supported()
 {
-	// Check if the CPU supports AVX512
 	std::array<int, 4> cpuInfo{};
 	__cpuidex(cpuInfo.data(), 7, 0);
 
@@ -74,7 +73,7 @@ static bool SSE4_2Supported()
 int main(int argc, char** argv)
 {
 	std::u8string path(u8"..\\" OOP_WITH_CPP);
-
+	
 	if (AVX512Supported())
 		path += AVX512;
 	else if (AVX2AndFMA3Supported())
