@@ -3,7 +3,7 @@
 C++ sandbox/learning project focused on OOP-style architecture with a Vulkan renderer and an SDL3 + Dear ImGui application layer. Then a CPU Ray Tracer implementation as a the main rendering backend which sends renderd Images to the Vulkan renderer for display.
 The project uses Premake to generate Visual Studio solutions with multiple SIMD builds (SSE4.2, AVX2, AVX512). All SIMD builds must be built as the StartProj will link against them based on CPU detection at runtime.
 
-This project has been Archived to prevent any accutations of cheating by changing the project after submission.
+This project has been archived to prevent any accutations of cheating by changing the project after submission.
 
 ## Features
 - Vulkan rendering backend (uses `VULKAN_SDK`)
@@ -66,4 +66,3 @@ This project has been Archived to prevent any accutations of cheating by changin
 
 ## Notes
 - This File has been created with the assistance of AI. Though I have reviewed and edited it.
-- If you would like to do a pull requst please direct it to the continuation of this project at [GraphicsProgrammingWithCpp](https://github.com/Forward-Fax3/GraphicsProgrammingWithCpp.git).

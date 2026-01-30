@@ -46,7 +46,7 @@ namespace OWC
 		// Lambertion Sphere
 		{
 			material = std::make_shared<Lambertian>(Colour(0.4f, 0.2f, 0.1f, 1.0f));
-			m_SceneObjects->AddObject(std::make_shared<Sphere>(Point(-4.0f, -1, 0), 1.0, material));
+			m_SceneObjects->AddObject(std::make_shared<Sphere>(Point(-4.0f, -1.0f, 0.0f), 1.0f, material));
 		}
 		// Metal Sphere
 		{

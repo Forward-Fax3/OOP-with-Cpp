@@ -5,6 +5,9 @@
 #include <memory>
 #include <vector>
 
+#pragma warning(push)
+#pragma warning(disable: 4324) // structure was padded due to alignment specifier
+
 
 namespace OWC
 {
@@ -45,3 +48,5 @@ namespace OWC
 		AABB m_AABB;
 	};
 }
+
+#pragma warning(pop)
